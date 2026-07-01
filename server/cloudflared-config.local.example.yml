@@ -1,0 +1,9 @@
+tunnel: your-tunnel-id
+credentials-file: C:\Users\YourName\.cloudflared\your-tunnel-id.json
+
+ingress:
+  - hostname: example.com
+    service: http://127.0.0.1:18080
+  - hostname: esp32.example.com
+    service: http://127.0.0.1:18080
+  - service: http_status:404

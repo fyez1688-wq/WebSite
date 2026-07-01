@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>我的个人主页</title>
+  <meta name="description" content="一个三栏个人主页，包含搜索、链接、音乐卡片和主题切换。">
+  <link rel="stylesheet" href="/assets/site/styles.css?v=20260702-3">
+</head>
+<body>
+  <div class="loading" id="loading">
+    <div class="loading-orbit"></div>
+    <div class="loading-bar"><span id="loadingFill"></span></div>
+    <div class="loading-text" id="loadingText">0%</div>
+  </div>
+
+  <canvas id="particleCanvas" aria-hidden="true"></canvas>
+  <div class="scroll-bar"><span id="scrollFill"></span></div>
+
+  <div class="context-menu" id="contextMenu">
+    <button data-action="top">回到顶部</button>
+    <button data-action="theme">切换主题</button>
+    <button data-action="music">切换播放</button>
+    <button data-action="note">随机提示</button>
+  </div>
+
+  <button class="back-top" id="backTop" aria-label="回到顶部">↑</button>
+
+  <main class="shell">
+    <aside class="left-panel">
+      <section class="avatar-card">
+        <div class="avatar">
+          <div class="avatar-core">P</div>
+        </div>
+        <h1>PZQ Home</h1>
+        <p>China · Remote Lab</p>
+      </section>
+
+      <section class="panel">
+        <div class="place">📍 Anhui / Cloudflare / ESP32</div>
+        <div class="clock" id="clock">--:--:--</div>
+        <div class="date" id="date">----年--月--日</div>
+      </section>
+
+      <section class="panel tags">
+        <span>ESP32-S3</span>
+        <span>远程控制</span>
+        <span>Cloudflare</span>
+        <span>个人主页</span>
+        <span>折腾中</span>
+        <span>Never stop</span>
+      </section>
+
+      <section class="panel timeline">
+        <div><b>现在</b><span>主页上线</span></div>
+        <div><b>今天</b><span>服务器调通</span></div>
+        <div><b>长期</b><span>远程设备管理</span></div>
+        <div><b>未来</b><span>继续扩展功能</span></div>
+      </section>
+
+      <section class="panel stats">
+        <h2>站点信息</h2>
+        <div class="stats-grid">
+          <div><strong>Cloudflare</strong><span>托管通道</span></div>
+          <div><strong id="visitCount">1</strong><span>本地访问</span></div>
+          <div><strong>8</strong><span>链接卡片</span></div>
+        </div>
+      </section>
+    </aside>
+
+    <section class="content">
+      <form class="search" action="https://www.bing.com/search" method="get" target="_blank">
+        <span>⌕</span>
+        <input name="q" id="searchInput" placeholder="必应搜索..." autocomplete="off">
+        <kbd>Enter</kbd>
+      </form>
+
+      <header class="hero">
+        <div class="mobile-avatar">P</div>
+        <p class="hello" id="greeting">下午好，欢迎回来</p>
+        <h1>Hello, I am <span>PZQ</span></h1>
+        <p>一个放置远程设备、个人链接、音乐和碎碎念的极简主页。</p>
+        <p>把功能模块收在一起，让服务器、ESP32 和日常工具都能一眼找到。</p>
+        <div class="quick-links">
+          <button type="button" id="themeToggle" data-i18n="theme">主题</button>
+          <div class="lang-toggle" aria-label="Language">
+            <button type="button" data-lang="zh">CN</button>
+            <button type="button" data-lang="en">EN</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="section-title">
+        <span>◇</span>
+        <h2 data-i18n="linksTitle">功能模块</h2>
+      </section>
+
+      <section class="cards">
+        <a class="link-card" id="esp32ModuleOpen" href="#" target="_self">
+          <div><h3 data-i18n="espCardTitle">ESP32 模块</h3><p data-i18n="espCardText">在个人主页里查看设备状态和进入控制台。</p></div><span>01</span>
+        </a>
+        <a class="link-card" id="storageModuleOpen" href="/storage" target="_self">
+          <div><h3>存储模块</h3><p>注册账号后上传、下载、删除和重命名自己的文件。</p></div><span>02</span>
+        </a>
+        <a class="link-card" href="https://github.com" target="_blank" rel="noreferrer">
+          <div><h3>GitHub</h3><p>代码仓库、文档和项目记录。</p></div><span>03</span>
+        </a>
+        <a class="link-card" href="https://www.bilibili.com" target="_blank" rel="noreferrer">
+          <div><h3>Bilibili</h3><p>视频、教程和日常收藏。</p></div><span>04</span>
+        </a>
+        <a class="link-card" href="https://dash.cloudflare.com" target="_blank" rel="noreferrer">
+          <div><h3>Cloudflare</h3><p>域名、隧道和边缘服务管理。</p></div><span>05</span>
+        </a>
+        <a class="link-card" href="https://www.bing.com" target="_blank" rel="noreferrer">
+          <div><h3>Search</h3><p>快速搜索资料和问题答案。</p></div><span>06</span>
+        </a>
+        <a class="link-card" href="#" target="_self">
+          <div><h3>碎碎念</h3><p>今天也把事情一点点接起来。</p></div><span>07</span>
+        </a>
+        <div id="customModules" class="custom-modules"></div>
+        <button class="link-card add-module-card" id="addModuleOpen" type="button">
+          <div><h3 data-i18n="addModuleTitle">新增模块</h3><p data-i18n="addModuleText">保存一个网址，生成新的快捷入口。</p></div><span>＋</span>
+        </button>
+        <form class="link-card add-module-form hidden" id="addModuleForm">
+          <div>
+            <h3 data-i18n="addModuleFormTitle">添加网址</h3>
+            <input id="moduleName" data-i18n-placeholder="moduleNamePlaceholder" placeholder="模块名称" required>
+            <input id="moduleUrl" data-i18n-placeholder="moduleUrlPlaceholder" placeholder="https://example.com" required>
+            <div class="module-actions">
+              <button type="submit" data-i18n="moduleSave">保存</button>
+              <button type="button" id="addModuleCancel" data-i18n="moduleCancel">取消</button>
+            </div>
+          </div>
+          <span>08</span>
+        </form>
+      </section>
+
+      <section class="terminal">
+        <div class="terminal-top"><span></span><span></span><span></span><b>status.log</b></div>
+        <pre id="terminalText"></pre>
+      </section>
+
+      <section class="section-title hidden" id="esp32-module">
+        <span>◎</span>
+        <h2 data-i18n="espModuleTitle">ESP32-S3 远程主页</h2>
+      </section>
+
+      <section class="esp32-module hidden" id="esp32ModulePanel">
+        <div class="esp32-summary">
+          <div>
+            <span data-i18n="espOnlineLabel">在线状态</span>
+            <strong id="espOnline">检测中</strong>
+          </div>
+          <div>
+            <span data-i18n="espIpLabel">设备 IP</span>
+            <strong id="espIp">-</strong>
+          </div>
+          <div>
+            <span data-i18n="espRssiLabel">WiFi RSSI</span>
+            <strong id="espRssi">-</strong>
+          </div>
+          <div>
+            <span data-i18n="espHeapLabel">剩余内存</span>
+            <strong id="espHeap">-</strong>
+          </div>
+        </div>
+        <div class="esp32-lock" id="esp32Lock">
+          <div>
+            <span data-i18n="espLockEyebrow">受保护模块</span>
+            <h3 data-i18n="espLockTitle">输入 ESP32-S3 账号密码后查看远程主页</h3>
+            <p data-i18n="espLockText">默认不会在个人主页中加载控制台，认证通过后才会显示远程页面。</p>
+          </div>
+          <form id="espUnlockForm" class="esp32-login">
+            <label>
+              <span data-i18n="espUserLabel">账号</span>
+              <input id="espUser" name="user" autocomplete="username" required>
+            </label>
+            <label>
+              <span data-i18n="espPasswordLabel">密码</span>
+              <div class="password-field">
+                <input id="espPassword" name="password" type="password" autocomplete="current-password" required>
+                <button id="espPasswordToggle" type="button" aria-label="显示密码" title="显示密码">显示</button>
+              </div>
+            </label>
+            <button type="submit" data-i18n="espUnlockButton">解锁</button>
+          </form>
+          <p class="esp32-auth-message" id="espAuthMessage" aria-live="polite"></p>
+        </div>
+        <div class="esp32-frame-wrap hidden" id="esp32FrameWrap">
+        </div>
+      </section>
+
+      <section class="section-title hidden" id="storage-module">
+        <span>▣</span>
+        <h2>存储模块</h2>
+      </section>
+
+      <section class="storage-module hidden" id="storageModulePanel">
+        <iframe id="storageFrame" title="存储模块" data-src="/storage"></iframe>
+      </section>
+    </section>
+
+    <aside class="right-panel">
+      <section class="player">
+        <div class="disc" id="disc"><div>♪</div></div>
+        <h2 id="trackName">等待播放</h2>
+        <div class="player-controls">
+          <button id="prevTrack" aria-label="上一首">⏮</button>
+          <button id="playMusic" aria-label="播放">▶</button>
+          <button id="nextTrack" aria-label="下一首">⏭</button>
+        </div>
+        <div class="visualizer" id="visualizer"></div>
+      </section>
+
+      <section class="playlist">
+        <h2>个人歌单</h2>
+        <button class="random" id="randomTrack">随机播放</button>
+        <ol id="playlist">
+          <li>正在读取歌曲...</li>
+        </ol>
+      </section>
+    </aside>
+  </main>
+
+  <footer>2026 · Personal Remote Home · Built for local static hosting</footer>
+
+  <div class="toast" id="toast"></div>
+  <script src="/assets/site/script.js?v=20260702-3"></script>
+</body>
+</html>

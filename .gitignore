@@ -1,0 +1,27 @@
+.aider*
+.agents/
+.codex/
+.gitignore.bak
+
+# Runtime data and secrets
+dynamic/
+server/cloudflared-config.yml
+server/cloudflared-config.local.yml
+server/cloudflared.exe
+
+# Build outputs and packaged installers
+build/
+dist/
+*.zip
+*.7z
+*.rar
+*.exe
+
+# Firmware build artifacts
+firmware/**/build/
+
+# OS/editor files
+Thumbs.db
+.DS_Store
+*.tmp
+*.log
