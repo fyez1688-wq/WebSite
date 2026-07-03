@@ -11,13 +11,14 @@
 - 结果：`admin@pzq1688.local` 可登录 `/admin`；旧 `admin/admin` 返回 401；数据库中旧 `admin` 状态为 `DISABLED`。
 - 遗留风险：Windows 本机 `npm run admin:reset` 因 `tsx`/esbuild `spawn EPERM` 失败；容器内可执行。旧的未引用文件 `scripts/reset-admin.ts` 删除被 Windows 拒绝，后续文件锁解除后移除。
 
-### 后台权限验收
+### 已完成：后台权限验收
 
 - 目标：系统化验证未登录、普通用户、管理员三种角色访问后台页面和 API 的行为。
-- 涉及文件：`lib/permissions.ts`、`app/admin/*`、`app/api/admin/*`。
+- 涉及文件：`lib/permissions.ts`、`middleware.ts`、`scripts/permission-smoke.js`、`package.json`。
 - 验收条件：未登录跳登录，普通用户 403，管理员可访问；普通用户直接调用后台 API 返回 403。
-- 需要运行：建议补 Playwright 或 API smoke test。
-- 风险：NextAuth Cookie 在 HTTP/HTTPS 场景不同，测试要覆盖 `NEXTAUTH_URL`。
+- 已运行：`npm run lint`、`npx tsc --noEmit`、`docker compose up -d --build app`、`npm run test:permissions`。
+- 结果：权限 smoke test 已通过；后台 API 未登录返回 401，普通用户返回 403，管理员返回 200。
+- 风险：`middleware.ts` 在 Next 16 中提示约定已弃用，后续仍应迁移到 `proxy.ts`，但本轮未处理该独立问题。
 
 ## P1：当前主要开发任务
 

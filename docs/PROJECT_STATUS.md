@@ -26,6 +26,7 @@
 - Docker：`db`、`app`、`caddy` 服务可启动，PostgreSQL 18 数据卷挂载为 `/var/lib/postgresql`。
 - 管理员默认账号安全修复：`.env.example` 已改为占位强密码，本地 `.env` 已改为非 `admin/admin`，`prisma/seed.ts` 会拒绝弱管理员配置，`npm run admin:reset` 可显式重置管理员并禁用旧 `admin` 账号。
 - Git 基线：已初始化首次提交准备；`.env`、`.env.local`、`node_modules/`、`.next/`、`.next-build/`、`.next-final/`、根目录 `/uploads/`、`public/uploads/` 和遗留 `scripts/reset-admin.ts` 不进入 Git。
+- 后台权限验收：`/admin` 页面在 middleware 层校验 NextAuth JWT，未登录跳 `/login`，普通用户跳 `/403`；后台 API 在 Route Handler 中通过 `requireAdminApi()` 区分未登录 401 和非管理员 403。
 
 ## 部分完成
 
@@ -154,11 +155,13 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 - `docker compose up -d --build app`
 - `docker compose exec -T app npx prisma migrate deploy`
 - `docker compose exec -T app npm run admin:reset`
+- `npm run test:permissions`
 
 接口冒烟验证：
 
 - `admin@pzq1688.local` 登录成功并可访问 `/admin`。
 - 旧 `admin/admin` 登录返回 401。
+- 未登录访问 `/admin` 会跳转 `/login`；普通用户访问 `/admin` 会跳转 `/403`；普通用户调用 `/api/admin/contents` 返回 403；管理员调用返回 200。
 - 管理员创建内容成功。
 - 发布后前台详情页返回 200。
 - 下架成功。

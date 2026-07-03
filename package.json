@@ -13,7 +13,8 @@
     "prisma:dev": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",
     "admin:reset": "tsx prisma/reset-admin.ts",
-    "test:smoke": "tsx scripts/smoke-test.ts"
+    "test:smoke": "tsx scripts/smoke-test.ts",
+    "test:permissions": "node scripts/permission-smoke.js"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
