@@ -22,13 +22,14 @@
 
 ## P1：当前主要开发任务
 
-### Markdown 编辑器完善
+### 已完成：Markdown 编辑器完善
 
 - 目标：将 textarea 工具栏升级为更完整的 Markdown 编辑体验，支持预览、代码块语言、快捷键和更可靠的自动保存状态。
-- 涉及文件：`components/admin-content-form.tsx`、前台详情页、预览页。
+- 涉及文件：`components/admin-content-form.tsx`、`components/markdown-preview.tsx`。
 - 验收条件：编辑内容不会丢失；代码块可选择语言；保存状态准确；移动端可编辑。
-- 需要运行：`npm run lint`、`npx tsc --noEmit`、`docker compose up -d --build app`。
-- 风险：引入编辑器依赖可能影响 SSR，需要动态加载并验证 Next 16 兼容。
+- 已运行：`npm run lint`、`npx tsc --noEmit`、`docker compose up -d --build app`、`npm run test:permissions`。
+- 结果：后台内容表单支持编辑/预览/分屏模式、代码块语言选择、快捷键、清除格式、扩大编辑区域和安全 React 预览；自动保存增加旧请求忽略保护。
+- 风险：未引入第三方富文本编辑器；前台详情页和独立管理员预览页的 Markdown 渲染仍由下一项任务处理。
 
 ### 前台 Markdown 渲染与代码高亮
 

@@ -3,8 +3,9 @@
 import type { Category, Content, ContentResourceDetail, ContentTag, Tag } from "@prisma/client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { Bold, Code, Eye, Heading, ImagePlus, Italic, LinkIcon, List, ListOrdered, Quote, Redo2, Save, Strikethrough, Undo2 } from "lucide-react";
+import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+import { Bold, Code, Eraser, Eye, Heading, ImagePlus, Italic, LinkIcon, List, ListOrdered, Maximize2, Minimize2, Minus, PanelRightOpen, Quote, Save, Strikethrough } from "lucide-react";
+import { MarkdownPreview } from "@/components/markdown-preview";
 
 type ContentWithRelations = Content & {
   tags: (ContentTag & { tag: Tag })[];
@@ -43,7 +44,11 @@ export function AdminContentForm({
   const [status, setStatus] = useState(content?.status || "DRAFT");
   const [dirty, setDirty] = useState(false);
   const [saveState, setSaveState] = useState("已保存");
+  const [editorMode, setEditorMode] = useState<"edit" | "preview" | "split">("edit");
+  const [codeLanguage, setCodeLanguage] = useState("ts");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(content?.updatedAt ? new Date(content.updatedAt).toISOString() : undefined);
+  const saveRequestRef = useRef(0);
 
   useEffect(() => {
     if (!dirty) return;
@@ -51,16 +56,24 @@ export function AdminContentForm({
       void save("DRAFT", true);
     }, 4000);
     return () => window.clearTimeout(timer);
-  });
+    // save 会读取当前表单 DOM，依赖关键受控字段触发防抖即可。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [body, contentType, coverImage, dirty, slug, status, summary, title]);
 
   useEffect(() => {
     const handler = (event: BeforeUnloadEvent) => {
       if (!dirty) return;
       event.preventDefault();
+      event.returnValue = "";
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
+
+  function markDirty() {
+    setDirty(true);
+    setSaveState("有未保存修改");
+  }
 
   function collect(statusValue: string) {
     const form = document.querySelector<HTMLFormElement>("#content-form");
@@ -108,6 +121,8 @@ export function AdminContentForm({
       setSaveState("标题不能为空");
       return;
     }
+    const requestId = saveRequestRef.current + 1;
+    saveRequestRef.current = requestId;
     setSaveState("正在保存...");
     const payload = collect(statusValue);
     const endpoint = id ? `/api/admin/contents/${id}` : "/api/admin/contents";
@@ -117,6 +132,7 @@ export function AdminContentForm({
       body: JSON.stringify(payload)
     });
     const result = await res.json();
+    if (requestId !== saveRequestRef.current) return;
     if (!res.ok) {
       setSaveState(result.error?.message || "保存失败");
       return;
@@ -138,28 +154,88 @@ export function AdminContentForm({
     const result = await res.json();
     if (res.ok) {
       setCoverImage(result.data.url);
-      setDirty(true);
+      markDirty();
       setSaveState("封面已上传");
     } else {
       setSaveState(result.error?.message || "上传失败");
     }
   }
 
-  function insert(prefix: string, suffix = "") {
+  function insert(prefix: string, suffix = "", placeholder = "文本") {
     const el = textRef.current;
     if (!el) return;
-    const before = body.slice(0, el.selectionStart);
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const before = body.slice(0, start);
+    const selected = body.slice(start, end);
+    const after = body.slice(end);
+    const value = `${before}${prefix}${selected || placeholder}${suffix}${after}`;
+    setBody(value);
+    markDirty();
+    window.setTimeout(() => {
+      el.focus();
+      const cursorStart = start + prefix.length;
+      const cursorEnd = cursorStart + (selected || placeholder).length;
+      el.setSelectionRange(cursorStart, cursorEnd);
+    });
+  }
+
+  function replaceSelection(value: string) {
+    const el = textRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    setBody(`${body.slice(0, start)}${value}${body.slice(end)}`);
+    markDirty();
+    window.setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(start, start + value.length);
+    });
+  }
+
+  function clearFormat() {
+    const el = textRef.current;
+    if (!el) return;
     const selected = body.slice(el.selectionStart, el.selectionEnd);
-    const after = body.slice(el.selectionEnd);
-    setBody(`${before}${prefix}${selected || "文本"}${suffix}${after}`);
-    setDirty(true);
+    if (!selected) return;
+    const cleaned = selected
+      .replace(/```[\s\S]*?\n([\s\S]*?)```/g, "$1")
+      .replace(/(\*\*|__|\*|_|~~|`|^#{1,6}\s|^>\s?)/gm, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+    replaceSelection(cleaned);
+  }
+
+  function handleEditorKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Tab") {
+      event.preventDefault();
+      insert("  ", "", "");
+      return;
+    }
+    if (!event.ctrlKey && !event.metaKey) return;
+    const key = event.key.toLowerCase();
+    if (key === "s") {
+      event.preventDefault();
+      void save("DRAFT");
+    }
+    if (key === "b") {
+      event.preventDefault();
+      insert("**", "**");
+    }
+    if (key === "i") {
+      event.preventDefault();
+      insert("*", "*");
+    }
+    if (key === "k") {
+      event.preventDefault();
+      insert("[", "](https://)");
+    }
   }
 
   const showResource = contentType === "SOFTWARE" || contentType === "DOWNLOAD";
   const detail = content?.resourceDetail;
 
   return (
-    <form id="content-form" className="admin-stack" onChange={() => setDirty(true)}>
+    <form id="content-form" className="admin-stack" onChange={markDirty}>
       <div className="admin-title-row">
         <div>
           <p className="admin-kicker">内容编辑</p>
@@ -178,12 +254,39 @@ export function AdminContentForm({
         <div className="admin-stack">
           <section className="admin-panel grid gap-3">
             <h3 className="font-semibold">基本信息</h3>
-            <input className="input" value={title} onChange={(e) => { setTitle(e.target.value); if (!slug) setSlug(makeSlug(e.target.value)); setDirty(true); }} placeholder="内容标题" maxLength={120} />
-            <input className="input" value={slug} onChange={(e) => { setSlug(e.target.value); setDirty(true); }} placeholder="slug，如 nextjs-guide" />
-            <textarea className="input min-h-24 py-3" value={summary} onChange={(e) => { setSummary(e.target.value); setDirty(true); }} maxLength={500} placeholder="内容简介" />
+            <input className="input" value={title} onChange={(e) => { setTitle(e.target.value); if (!slug) setSlug(makeSlug(e.target.value)); markDirty(); }} placeholder="内容标题" maxLength={120} />
+            <input className="input" value={slug} onChange={(e) => { setSlug(e.target.value); markDirty(); }} placeholder="slug，如 nextjs-guide" />
+            <textarea className="input min-h-24 py-3" value={summary} onChange={(e) => { setSummary(e.target.value); markDirty(); }} maxLength={500} placeholder="内容简介" />
             <p className="text-right text-xs muted">{summary.length}/500</p>
-            <MarkdownToolbar insert={insert} />
-            <textarea ref={textRef} className="input min-h-[420px] py-3 font-mono text-sm" value={body} onChange={(e) => { setBody(e.target.value); setDirty(true); }} placeholder="正文内容，支持 Markdown" />
+            <div className={isFullscreen ? "fixed inset-3 z-50 grid rounded-lg border border-[var(--border)] bg-[var(--background)] p-4 shadow-2xl" : ""}>
+              <MarkdownToolbar
+                codeLanguage={codeLanguage}
+                editorMode={editorMode}
+                isFullscreen={isFullscreen}
+                setCodeLanguage={setCodeLanguage}
+                setEditorMode={setEditorMode}
+                setIsFullscreen={setIsFullscreen}
+                insert={insert}
+                clearFormat={clearFormat}
+              />
+              <div className={editorMode === "split" ? "mt-3 grid gap-3 lg:grid-cols-2" : "mt-3"}>
+                {editorMode !== "preview" && (
+                  <textarea
+                    ref={textRef}
+                    className="input min-h-[420px] resize-y py-3 font-mono text-sm"
+                    value={body}
+                    onChange={(e) => { setBody(e.target.value); markDirty(); }}
+                    onKeyDown={handleEditorKeyDown}
+                    placeholder="正文内容，支持 Markdown。快捷键：Ctrl+B 加粗，Ctrl+I 斜体，Ctrl+K 链接，Ctrl+S 保存草稿。"
+                  />
+                )}
+                {editorMode !== "edit" && (
+                  <div className="min-h-[420px] overflow-auto rounded border border-[var(--border)] bg-[var(--card)] p-4">
+                    <MarkdownPreview value={body} emptyText="预览区会显示正文效果" />
+                  </div>
+                )}
+              </div>
+            </div>
           </section>
 
           <section className="admin-panel grid gap-3">
@@ -201,7 +304,7 @@ export function AdminContentForm({
         <aside className="admin-stack">
           <section className="admin-panel grid gap-3">
             <h3 className="font-semibold">发布设置</h3>
-            <select className="input" value={contentType} onChange={(e) => { setContentType(e.target.value as typeof contentType); setDirty(true); }}>
+            <select className="input" value={contentType} onChange={(e) => { setContentType(e.target.value as typeof contentType); markDirty(); }}>
               {contentTypes.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </select>
             <select className="input" name="categoryId" defaultValue={content?.categoryId || ""}>
@@ -216,7 +319,7 @@ export function AdminContentForm({
                 </label>
               ))}
             </div>
-            <select className="input" value={status} onChange={(e) => { setStatus(e.target.value as typeof status); setDirty(true); }}>
+            <select className="input" value={status} onChange={(e) => { setStatus(e.target.value as typeof status); markDirty(); }}>
               <option value="DRAFT">草稿</option>
               <option value="PUBLISHED">已发布</option>
               <option value="OFFLINE">已下架</option>
@@ -230,7 +333,7 @@ export function AdminContentForm({
           <section className="admin-panel grid gap-3">
             <h3 className="font-semibold">封面图片</h3>
             {coverImage && <Image src={coverImage} alt="" width={640} height={360} className="aspect-video w-full rounded object-cover" />}
-            <input className="input" value={coverImage} onChange={(e) => { setCoverImage(e.target.value); setDirty(true); }} placeholder="封面地址" />
+            <input className="input" value={coverImage} onChange={(e) => { setCoverImage(e.target.value); markDirty(); }} placeholder="封面地址" />
             <label className="btn cursor-pointer">
               <ImagePlus className="size-4" />
               上传封面
@@ -259,27 +362,64 @@ export function AdminContentForm({
   );
 }
 
-function MarkdownToolbar({ insert }: { insert: (prefix: string, suffix?: string) => void }) {
+function MarkdownToolbar({
+  codeLanguage,
+  editorMode,
+  isFullscreen,
+  setCodeLanguage,
+  setEditorMode,
+  setIsFullscreen,
+  insert,
+  clearFormat
+}: {
+  codeLanguage: string;
+  editorMode: "edit" | "preview" | "split";
+  isFullscreen: boolean;
+  setCodeLanguage: (value: string) => void;
+  setEditorMode: (value: "edit" | "preview" | "split") => void;
+  setIsFullscreen: (value: boolean) => void;
+  insert: (prefix: string, suffix?: string, placeholder?: string) => void;
+  clearFormat: () => void;
+}) {
   const buttons = [
-    [Heading, "标题", "## "],
-    [Bold, "加粗", "**", "**"],
-    [Italic, "斜体", "*", "*"],
-    [Strikethrough, "删除线", "~~", "~~"],
-    [List, "无序列表", "\n- "],
-    [ListOrdered, "有序列表", "\n1. "],
-    [Quote, "引用", "\n> "],
-    [Code, "代码块", "\n```ts\n", "\n```"],
-    [LinkIcon, "链接", "[", "](https://)"],
-    [Undo2, "分割线", "\n\n---\n\n"],
-    [Redo2, "行内代码", "`", "`"]
+    [Heading, "标题", "## ", "", "标题"],
+    [Bold, "加粗", "**", "**", "加粗文字"],
+    [Italic, "斜体", "*", "*", "斜体文字"],
+    [Strikethrough, "删除线", "~~", "~~", "删除线文字"],
+    [List, "无序列表", "\n- ", "", "列表项"],
+    [ListOrdered, "有序列表", "\n1. ", "", "列表项"],
+    [Quote, "引用", "\n> ", "", "引用内容"],
+    [Code, "代码块", `\n\`\`\`${codeLanguage}\n`, "\n```", "代码"],
+    [LinkIcon, "链接", "[", "](https://)", "链接文字"],
+    [Minus, "分割线", "\n\n---\n\n", "", ""]
   ] as const;
   return (
-    <div className="flex flex-wrap gap-2">
-      {buttons.map(([Icon, title, prefix, suffix]) => (
-        <button key={title} type="button" className="btn size-9 p-0" title={title} onClick={() => insert(prefix, suffix)}>
+    <div className="flex flex-wrap items-center gap-2">
+      {buttons.map(([Icon, title, prefix, suffix, placeholder]) => (
+        <button key={title} type="button" className="btn size-9 p-0" title={title} onClick={() => insert(prefix, suffix, placeholder)}>
           <Icon className="size-4" />
         </button>
       ))}
+      <button type="button" className="btn size-9 p-0" title="行内代码" onClick={() => insert("`", "`", "代码")}>
+        <Code className="size-4" />
+      </button>
+      <button type="button" className="btn size-9 p-0" title="清除格式" onClick={clearFormat}>
+        <Eraser className="size-4" />
+      </button>
+      <select className="input h-10 min-h-10 w-28" value={codeLanguage} onChange={(event) => setCodeLanguage(event.target.value)} title="代码块语言">
+        {["ts", "tsx", "js", "jsx", "json", "css", "html", "sql", "bash", "text"].map((item) => <option key={item} value={item}>{item}</option>)}
+      </select>
+      <div className="flex rounded border border-[var(--border)] p-1">
+        {(["edit", "split", "preview"] as const).map((mode) => (
+          <button key={mode} type="button" className={`btn min-h-8 px-3 py-1 text-xs ${editorMode === mode ? "btn-primary" : ""}`} onClick={() => setEditorMode(mode)}>
+            {mode === "edit" ? "编辑" : mode === "split" ? "分屏" : "预览"}
+          </button>
+        ))}
+      </div>
+      <button type="button" className="btn size-9 p-0" title={isFullscreen ? "退出全屏" : "扩大编辑区域"} onClick={() => setIsFullscreen(!isFullscreen)}>
+        {isFullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+      </button>
+      <PanelRightOpen className="size-4 muted" aria-hidden="true" />
     </div>
   );
 }
