@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+.next-build/
+.next-final/
+out/
+
+# Build
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# 保留环境变量模板
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Operating system
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Local databases
+*.db
+*.db-journal
+
+# Docker persistent data
+postgres-data/
+docker-data/
+data/postgres/
+
+# User uploaded files
+public/uploads/
+/uploads/
+
+# Temporary files
+tmp/
+temp/

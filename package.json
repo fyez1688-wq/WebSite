@@ -1,0 +1,51 @@
+{
+  "name": "fy-site",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "cross-env NEXT_PRIVATE_BUILD_WORKER=0 next build --webpack",
+    "start": "next start",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:dev": "prisma migrate dev",
+    "seed": "tsx prisma/seed.ts",
+    "admin:reset": "tsx prisma/reset-admin.ts",
+    "test:smoke": "tsx scripts/smoke-test.ts"
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.11.1",
+    "@prisma/adapter-pg": "7.8.0",
+    "@prisma/client": "7.8.0",
+    "bcryptjs": "3.0.3",
+    "clsx": "^2.1.1",
+    "lucide-react": "1.23.0",
+    "next": "16.2.10",
+    "next-auth": "4.24.14",
+    "pg": "8.22.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.2",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "26.1.0",
+    "@types/pg": "8.20.0",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "cross-env": "10.1.0",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.10",
+    "prettier": "3.9.4",
+    "prisma": "7.8.0",
+    "tailwindcss": "4.3.2",
+    "tsx": "4.22.5",
+    "typescript": "6.0.3"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}

@@ -1,0 +1,9 @@
+pzq1688.com {
+  encode zstd gzip
+  reverse_proxy app:3000
+  header {
+    X-Frame-Options DENY
+    X-Content-Type-Options nosniff
+    Referrer-Policy strict-origin-when-cross-origin
+  }
+}

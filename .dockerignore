@@ -1,0 +1,10 @@
+node_modules
+.next
+.next-build
+.next-final
+.env
+.git
+backups
+postgres-data
+*.log
+*.tsbuildinfo

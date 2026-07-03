@@ -1,0 +1,288 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  DELETED
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  OFFLINE
+  HIDDEN
+}
+
+enum ContentType {
+  ARTICLE
+  LEARNING_RESOURCE
+  SOFTWARE
+  WEBSITE
+  DOWNLOAD
+  OTHER
+}
+
+enum LogAction {
+  CREATE
+  UPDATE
+  DELETE
+  PUBLISH
+  OFFLINE
+  LOGIN
+  DISABLE
+  RESTORE
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  passwordHash        String
+  nickname            String
+  avatar              String?
+  role                UserRole             @default(USER)
+  status              UserStatus           @default(ACTIVE)
+  emailVerified       DateTime?
+  accounts            Account[]
+  sessions            Session[]
+  favorites           Favorite[]
+  operationLogs       OperationLog[]       @relation("ActorLogs")
+  createdContents     Content[]            @relation("CreatedContents")
+  updatedContents     Content[]            @relation("UpdatedContents")
+  deletedContents     Content[]            @relation("DeletedContents")
+  passwordResetTokens PasswordResetToken[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@index([role, status])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  icon        String?
+  isEnabled   Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  contents    Content[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Tag {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  slug        String       @unique
+  description String?
+  color       String?
+  contents    ContentTag[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Content {
+  id            String        @id @default(cuid())
+  title         String
+  slug          String        @unique
+  summary       String
+  content       String
+  coverImage    String?
+  contentType   ContentType   @default(ARTICLE)
+  status        ContentStatus @default(DRAFT)
+  isFeatured    Boolean       @default(false)
+  isPinned      Boolean       @default(false)
+  isHidden      Boolean       @default(false)
+  allowFavorite Boolean       @default(true)
+  viewCount     Int           @default(0)
+  favoriteCount Int           @default(0)
+  downloadCount Int           @default(0)
+  sortOrder     Int           @default(0)
+  seoTitle      String?
+  seoDescription String?
+  seoKeywords   String?
+  ogTitle       String?
+  ogDescription String?
+  ogImage       String?
+  canonicalUrl  String?
+  categoryId    String?
+  category      Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags          ContentTag[]
+  favorites     Favorite[]
+  resourceDetail ContentResourceDetail?
+  createdById   String?
+  createdBy     User?         @relation("CreatedContents", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById   String?
+  updatedBy     User?         @relation("UpdatedContents", fields: [updatedById], references: [id], onDelete: SetNull)
+  deletedAt     DateTime?
+  deletedById   String?
+  deletedBy     User?         @relation("DeletedContents", fields: [deletedById], references: [id], onDelete: SetNull)
+  publishedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([status, isFeatured, isPinned])
+  @@index([contentType])
+  @@index([categoryId])
+  @@index([publishedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([deletedAt])
+  @@index([sortOrder])
+}
+
+model ContentResourceDetail {
+  id                    String   @id @default(cuid())
+  contentId             String   @unique
+  content               Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  softwareName          String?
+  softwareVersion       String?
+  supportedSystems      String?
+  fileSize              String?
+  officialUrl           String?
+  downloadUrl           String?
+  extractionCode        String?
+  installGuide          String?
+  requireLoginToDownload Boolean @default(false)
+  showDownloadCount     Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model ContentTag {
+  contentId String
+  tagId     String
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([contentId, tagId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  contentId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, contentId])
+  @@index([contentId])
+  @@index([userId, createdAt])
+}
+
+model Banner {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String?
+  imageUrl    String
+  linkUrl     String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  isActive  Boolean  @default(true)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  label     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OperationLog {
+  id        String    @id @default(cuid())
+  actorId   String?
+  actor     User?     @relation("ActorLogs", fields: [actorId], references: [id], onDelete: SetNull)
+  action    LogAction
+  target    String
+  targetId  String?
+  targetTitle String?
+  description String?
+  detail    String?
+  ip        String?
+  userAgent String?
+  createdAt DateTime  @default(now())
+
+  @@index([actorId, createdAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId, expiresAt])
+}
+
+model SearchTerm {
+  id        String   @id @default(cuid())
+  keyword   String   @unique
+  count     Int      @default(1)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}

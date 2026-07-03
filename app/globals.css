@@ -1,0 +1,249 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --background: #f4f6f2;
+  --foreground: #17211b;
+  --muted: #66756d;
+  --card: #ffffff;
+  --border: #dbe3dc;
+  --primary: #0f766e;
+  --primary-foreground: #ffffff;
+  --accent: #eab308;
+  --surface: #eef3ee;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0e1512;
+  --foreground: #edf5ef;
+  --muted: #9eb0a6;
+  --card: #151f1a;
+  --border: #2b3831;
+  --primary: #5eead4;
+  --primary-foreground: #06251f;
+  --accent: #facc15;
+  --surface: #111c17;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--surface) 90%, transparent), transparent 38%),
+    radial-gradient(circle at 25% 0%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 32%),
+    var(--background);
+  color: var(--foreground);
+  font-family:
+    "Source Han Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.container {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 14px 38px rgb(15 23 42 / 6%);
+}
+
+.btn {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 0 14px;
+  color: var(--foreground);
+  background: var(--card);
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.btn:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.input {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  padding: 0 12px;
+}
+
+.input:focus {
+  border-color: var(--primary);
+  outline: 3px solid color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.prose-content p {
+  line-height: 1.85;
+  margin: 0 0 1rem;
+}
+
+.section-band {
+  padding: 28px 0;
+}
+
+.hero-stage {
+  position: relative;
+  min-height: clamp(430px, 62vh, 660px);
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-stage::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background:
+    linear-gradient(90deg, rgb(8 22 18 / 82%), rgb(8 22 18 / 42%) 48%, rgb(8 22 18 / 10%)),
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 5%) 0 1px, transparent 1px 14px);
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-height: clamp(430px, 62vh, 660px);
+  align-content: center;
+  padding: 64px 0 92px;
+  color: #fff;
+}
+
+.hero-copy h1 {
+  max-width: 760px;
+  font-size: clamp(42px, 8vw, 88px);
+  font-weight: 800;
+  line-height: 0.98;
+}
+
+.hero-copy p {
+  max-width: 720px;
+}
+
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--border);
+}
+
+.stat-strip > div {
+  background: var(--card);
+  padding: 18px;
+}
+
+.admin-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-kicker {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card) 94%, var(--surface));
+  padding: 18px;
+  box-shadow: 0 10px 28px rgb(15 23 42 / 5%);
+}
+
+.admin-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.admin-table th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.admin-table th,
+.admin-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 13px 10px;
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.status-pill {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--primary) 25%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 9%, transparent);
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 10px;
+}
+
+@media (max-width: 720px) {
+  .stat-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
