@@ -28,10 +28,10 @@
 - Git 基线：已初始化首次提交准备；`.env`、`.env.local`、`node_modules/`、`.next/`、`.next-build/`、`.next-final/`、根目录 `/uploads/`、`public/uploads/` 和遗留 `scripts/reset-admin.ts` 不进入 Git。
 - 后台权限验收：`/admin` 页面在 middleware 层校验 NextAuth JWT，未登录跳 `/login`，普通用户跳 `/403`；后台 API 在 Route Handler 中通过 `requireAdminApi()` 区分未登录 401 和非管理员 403。
 - 后台 Markdown 编辑器：内容表单支持编辑/预览/分屏模式、代码块语言选择、Markdown 快捷键、清除格式、扩大编辑区域和安全 React 预览；自动保存有防抖、保存状态和旧请求忽略保护。
+- 前台 Markdown 渲染：正式详情页、后台编辑器预览和管理员独立预览页统一使用 `components/markdown-preview.tsx`，支持 GitHub 风格 Markdown、表格、任务列表、代码块语言标记、代码复制按钮和安全链接/图片过滤。
 
 ## 部分完成
 
-- Markdown 渲染：后台编辑器已有安全预览；前台详情页和管理员独立预览页仍未接入完整 Markdown 渲染与代码高亮。
 - 内容预览：管理员页面可预览草稿/下架内容；尚未实现短期预览令牌。
 - 分类管理：可创建、编辑、删除，删除时阻止删除仍有关联内容的分类；未实现“移动内容后删除”流程。
 - 标签管理：可创建、编辑、删除和颜色字段；未实现重复标签合并。
@@ -157,12 +157,14 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 - `docker compose exec -T app npm run admin:reset`
 - `npm run test:permissions`
 - `docker compose up -d --build app`
+- `npm run test:markdown`
 
 接口冒烟验证：
 
 - `admin@pzq1688.local` 登录成功并可访问 `/admin`。
 - 旧 `admin/admin` 登录返回 401。
 - 未登录访问 `/admin` 会跳转 `/login`；普通用户访问 `/admin` 会跳转 `/403`；普通用户调用 `/api/admin/contents` 返回 403；管理员调用返回 200。
+- Markdown 冒烟测试通过：GFM 表格、任务列表、行内代码、代码块语言、未知语言降级、复制按钮、安全外链、危险链接降级、原始 HTML 过滤、草稿/下架/软删除前台不可访问、管理员预览不增加浏览量。
 - 管理员创建内容成功。
 - 发布后前台详情页返回 200。
 - 下架成功。

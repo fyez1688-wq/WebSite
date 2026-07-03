@@ -118,6 +118,150 @@ textarea {
   margin: 0 0 1rem;
 }
 
+.markdown-body {
+  display: grid;
+  gap: 1rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.markdown-body :where(h1, h2, h3, h4, h5, h6) {
+  scroll-margin-top: 92px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.markdown-body h1 {
+  font-size: clamp(1.9rem, 5vw, 2.75rem);
+}
+
+.markdown-body h2 {
+  margin-top: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.45rem;
+  font-size: clamp(1.55rem, 4vw, 2rem);
+}
+
+.markdown-body h3 {
+  font-size: 1.35rem;
+}
+
+.markdown-body h4 {
+  font-size: 1.15rem;
+}
+
+.markdown-body :where(h5, h6) {
+  font-size: 1rem;
+}
+
+.markdown-body p {
+  margin: 0;
+  line-height: 1.85;
+}
+
+.markdown-body a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.markdown-body :where(ul, ol) {
+  display: grid;
+  gap: 0.45rem;
+  padding-left: 1.5rem;
+}
+
+.markdown-body ul {
+  list-style: disc;
+}
+
+.markdown-body ol {
+  list-style: decimal;
+}
+
+.markdown-body :where(ul ul, ul ol, ol ul, ol ol) {
+  margin-top: 0.45rem;
+}
+
+.markdown-body li {
+  line-height: 1.75;
+}
+
+.markdown-body li:has(input[type="checkbox"]) {
+  list-style: none;
+}
+
+.markdown-body input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+.markdown-body blockquote {
+  border-left: 4px solid var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+  color: var(--muted);
+  margin: 0;
+  padding: 0.8rem 1rem;
+}
+
+.markdown-body hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 0.5rem 0;
+}
+
+.markdown-inline-code {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.92em;
+  padding: 0.12rem 0.35rem;
+}
+
+.markdown-body pre,
+.markdown-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+.markdown-body pre {
+  white-space: pre;
+}
+
+.markdown-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.markdown-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.markdown-table-wrap table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.markdown-table-wrap :where(th, td) {
+  border-bottom: 1px solid var(--border);
+  padding: 0.7rem 0.85rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.markdown-table-wrap th {
+  background: var(--surface);
+  font-weight: 700;
+}
+
 .section-band {
   padding: 28px 0;
 }

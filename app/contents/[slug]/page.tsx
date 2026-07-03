@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ContentCard } from "@/components/content-card";
+import { MarkdownPreview } from "@/components/markdown-preview";
 import { prisma } from "@/lib/prisma";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -54,15 +55,23 @@ export default async function ContentDetailPage({ params }: Props) {
           {item.category && <span>{item.category.name}</span>}
           <span>{item.viewCount + 1} 浏览</span>
           <span>{item.favoriteCount} 收藏</span>
+          {item.publishedAt && <span>发布于 {item.publishedAt.toLocaleDateString("zh-CN")}</span>}
           <span>更新于 {item.updatedAt.toLocaleDateString("zh-CN")}</span>
         </div>
         <h1 className="mt-4 text-3xl font-semibold md:text-4xl">{item.title}</h1>
         <p className="mt-3 text-lg muted">{item.summary}</p>
+        {!!item.tags.length && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {item.tags.map(({ tag }) => (
+              <span key={tag.id} className="status-pill">{tag.name}</span>
+            ))}
+          </div>
+        )}
         <div className="mt-5 flex gap-3">
           <FavoriteButton contentId={item.id} />
           <CopyLinkButton />
         </div>
-        <div className="prose-content mt-8 whitespace-pre-wrap">{item.content}</div>
+        <MarkdownPreview value={item.content} className="mt-8" />
       </article>
       <div className="mt-6 grid gap-3 md:grid-cols-2">
         <div className="card p-4">上一篇：{prev ? <a href={`/contents/${prev.slug}`}>{prev.title}</a> : "没有了"}</div>

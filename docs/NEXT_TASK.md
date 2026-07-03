@@ -31,13 +31,14 @@
 - 结果：后台内容表单支持编辑/预览/分屏模式、代码块语言选择、快捷键、清除格式、扩大编辑区域和安全 React 预览；自动保存增加旧请求忽略保护。
 - 风险：未引入第三方富文本编辑器；前台详情页和独立管理员预览页的 Markdown 渲染仍由下一项任务处理。
 
-### 前台 Markdown 渲染与代码高亮
+### 已完成：前台 Markdown 渲染与代码高亮
 
 - 目标：前台详情和后台预览正确渲染 Markdown，并防止 XSS。
-- 涉及文件：`app/contents/[slug]/page.tsx`、`app/admin/content/[id]/preview/page.tsx`。
+- 涉及文件：`components/markdown-preview.tsx`、`app/contents/[slug]/page.tsx`、`app/admin/content/[id]/preview/page.tsx`、`app/globals.css`、`scripts/markdown-smoke.js`。
 - 验收条件：标题、列表、引用、链接、图片、代码块正常显示；危险 HTML 不执行。
-- 需要运行：`npm run lint`、`npx tsc --noEmit`、前台详情页手工验证。
-- 风险：Markdown 渲染库和清洗库需要选择长期维护版本。
+- 已运行：`npm run lint`、`npx tsc --noEmit`、`npm run test:permissions`、`npm run test:markdown`、`docker compose up -d --build app`。
+- 结果：统一渲染组件已接入前台详情、管理员预览和后台编辑器预览；支持 GFM 表格、任务列表、自动链接、代码语言标记、代码复制按钮和安全过滤。
+- 限制：代码高亮使用 Prism Light 注册常用语言；`structured-text` 按纯文本显示。预览页仍未实现短期预览令牌。
 
 ### 分类移动后删除
 
