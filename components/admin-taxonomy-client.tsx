@@ -25,6 +25,8 @@ export function AdminTaxonomyClient({
   const [items, setItems] = useState(initialItems);
   const [editing, setEditing] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<TaxonomyItem | null>(null);
+  const [moveTargetId, setMoveTargetId] = useState("");
 
   async function create(formData: FormData) {
     const res = await fetch(endpoint, {
@@ -67,11 +69,29 @@ export function AdminTaxonomyClient({
     setMessage("已保存");
   }
 
-  async function remove(id: string) {
-    if (!confirm("确认删除？关联内容会按数据库规则处理。")) return;
-    const res = await fetch(`${endpoint}/${id}`, { method: "DELETE" });
-    if (res.ok) setItems((old) => old.filter((item) => item.id !== id));
-    else setMessage("删除失败");
+  async function remove(id: string, moveToCategoryId?: string) {
+    if (!confirm(moveToCategoryId ? "确认移动关联内容并删除该分类？" : "确认删除？")) return;
+    const res = await fetch(`${endpoint}/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: moveToCategoryId ? JSON.stringify({ moveToCategoryId }) : undefined
+    });
+    const body = await res.json().catch(() => null);
+    if (res.ok) {
+      setItems((old) => old.filter((item) => item.id !== id));
+      setPendingDelete(null);
+      setMoveTargetId("");
+      setMessage(body?.message || "已删除");
+      return;
+    }
+    if (body?.error?.code === "CATEGORY_IN_USE" && endpoint.includes("categories")) {
+      const item = items.find((entry) => entry.id === id);
+      if (item) {
+        setPendingDelete(item);
+        setMoveTargetId(items.find((entry) => entry.id !== id)?.id || "");
+      }
+    }
+    setMessage(body?.error?.message || "删除失败");
   }
 
   return (
@@ -94,6 +114,25 @@ export function AdminTaxonomyClient({
         </button>
       </form>
       <div className="admin-panel overflow-x-auto">
+        {pendingDelete && (
+          <div className="mb-4 grid gap-3 rounded border border-[var(--border)] bg-[var(--surface)] p-4 md:grid-cols-[1fr_260px_auto_auto]">
+            <div>
+              <p className="font-medium">移动内容后删除：{pendingDelete.name}</p>
+              <p className="text-sm muted">该分类下仍有关联内容，请选择目标分类。移动完成后会删除原分类。</p>
+            </div>
+            <select className="input" value={moveTargetId} onChange={(event) => setMoveTargetId(event.target.value)}>
+              {items.filter((item) => item.id !== pendingDelete.id).map((item) => (
+                <option key={item.id} value={item.id}>{item.name}</option>
+              ))}
+            </select>
+            <button type="button" className="btn btn-primary" disabled={!moveTargetId} onClick={() => remove(pendingDelete.id, moveTargetId)}>
+              移动并删除
+            </button>
+            <button type="button" className="btn" onClick={() => { setPendingDelete(null); setMoveTargetId(""); }}>
+              取消
+            </button>
+          </div>
+        )}
         <table className="admin-table">
           <thead>
             <tr>

@@ -40,13 +40,14 @@
 - 结果：统一渲染组件已接入前台详情、管理员预览和后台编辑器预览；支持 GFM 表格、任务列表、自动链接、代码语言标记、代码复制按钮和安全过滤。
 - 限制：代码高亮使用 Prism Light 注册常用语言；`structured-text` 按纯文本显示。预览页仍未实现短期预览令牌。
 
-### 分类移动后删除
+### 已完成：分类移动后删除
 
 - 目标：分类下存在内容时支持移动到其他分类后删除。
-- 涉及文件：`app/api/admin/categories/[id]/route.ts`、`components/admin-taxonomy-client.tsx`。
+- 涉及文件：`app/api/admin/categories/[id]/route.ts`、`components/admin-taxonomy-client.tsx`、`scripts/category-delete-smoke.js`。
 - 验收条件：不能产生无效分类引用；操作有二次确认和日志。
-- 需要运行：分类删除 API 冒烟测试。
-- 风险：批量移动内容时要保留当前筛选和前台展示规则。
+- 已运行：`npm run lint`、`npx tsc --noEmit`、`npm run test:permissions`、`npm run test:markdown`、`npm run test:category-delete`、`docker compose up -d --build app`。
+- 结果：有关联内容的分类直接删除会失败；选择目标分类后，服务端事务内移动内容并删除原分类，操作日志写入，内容分类更新成功。
+- 风险：后台 UI 目前使用浏览器原生 `confirm` 做二次确认，后续可替换为统一弹窗组件。
 
 ### 标签合并
 

@@ -15,7 +15,8 @@
     "admin:reset": "tsx prisma/reset-admin.ts",
     "test:smoke": "tsx scripts/smoke-test.ts",
     "test:permissions": "node scripts/permission-smoke.js",
-    "test:markdown": "node scripts/markdown-smoke.js"
+    "test:markdown": "node scripts/markdown-smoke.js",
+    "test:category-delete": "node scripts/category-delete-smoke.js"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
