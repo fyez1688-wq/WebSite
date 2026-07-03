@@ -54,7 +54,13 @@
 
 ## Markdown 存储与渲染
 
-正文目前以 Markdown 文本存入 `Content.content`。后台编辑器是 textarea + Markdown 工具栏。前台详情页和预览页目前使用 `whitespace-pre-wrap` 简单显示正文，尚未引入 Markdown parser、HTML 清洗或代码高亮。
+正文以 Markdown 文本存入 `Content.content`。后台编辑器是 textarea + Markdown 工具栏，支持编辑、分屏和预览模式。前台详情页、后台编辑器预览和管理员独立预览页复用 `components/markdown-preview.tsx`，通过 `react-markdown` + `remark-gfm` 渲染 GitHub 风格 Markdown，并用 Prism Light 做常用语言代码高亮。
+
+Markdown 渲染组件禁用原始 HTML，过滤危险链接和图片地址，外部链接增加 `noopener noreferrer`，代码块复制按钮只在客户端处理文本复制，不执行代码。
+
+## 分类与标签流程
+
+分类和标签页面复用 `components/admin-taxonomy-client.tsx`。分类删除时，如果仍有关联内容，服务端会要求选择目标分类，并在事务内移动内容后删除原分类。标签合并通过 `POST /api/admin/tags/[id]/merge` 完成，事务内把源标签关联迁移到目标标签，跳过已有重复关联，删除源标签并写入操作日志。
 
 ## Prisma 与 PostgreSQL
 
@@ -89,6 +95,7 @@ npx prisma migrate deploy && npm run seed && node server.js
 - `components/admin-content-list.tsx`：后台内容表格、筛选、批量操作。
 - `components/admin-content-form.tsx`：创建/编辑内容表单。
 - `app/api/admin/contents/*`：后台内容管理 API。
+- `app/api/admin/tags/[id]/merge/route.ts`：标签合并 API。
+- `components/markdown-preview.tsx`：统一 Markdown 渲染和代码复制组件。
 - `prisma/schema.prisma`：数据库模型。
 - `prisma/seed.ts`：初始化管理员和基础数据。
-

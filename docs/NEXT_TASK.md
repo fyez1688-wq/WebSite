@@ -49,13 +49,14 @@
 - 结果：有关联内容的分类直接删除会失败；选择目标分类后，服务端事务内移动内容并删除原分类，操作日志写入，内容分类更新成功。
 - 风险：后台 UI 目前使用浏览器原生 `confirm` 做二次确认，后续可替换为统一弹窗组件。
 
-### 标签合并
+### 已完成：标签合并
 
 - 目标：支持将重复标签合并到目标标签。
-- 涉及文件：`app/api/admin/tags/*`、`components/admin-taxonomy-client.tsx`。
+- 涉及文件：`app/api/admin/tags/*`、`components/admin-taxonomy-client.tsx`、`scripts/tag-merge-smoke.js`、`package.json`。
 - 验收条件：内容关联迁移成功，重复关系不报错，源标签删除。
-- 需要运行：标签合并接口测试。
-- 风险：`ContentTag` 是复合主键，迁移关联时要处理重复记录。
+- 已运行：`npm run lint`、`npx tsc --noEmit`、`npm run test:tag-merge`、`npm run test:permissions`、`npm run test:markdown`、`npm run test:category-delete`、`docker compose up -d --build app`。
+- 结果：后台标签管理可选择目标标签合并；服务端事务内迁移 `ContentTag` 关联，重复关系自动跳过，源标签删除并写入操作日志。
+- 风险：后台 UI 目前使用浏览器原生 `confirm` 做二次确认，后续可替换为统一弹窗组件。
 
 ## P2：功能增强
 

@@ -26,7 +26,10 @@ export function AdminTaxonomyClient({
   const [editing, setEditing] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [pendingDelete, setPendingDelete] = useState<TaxonomyItem | null>(null);
+  const [pendingMerge, setPendingMerge] = useState<TaxonomyItem | null>(null);
   const [moveTargetId, setMoveTargetId] = useState("");
+  const [mergeTargetId, setMergeTargetId] = useState("");
+  const canMerge = endpoint.includes("tags");
 
   async function create(formData: FormData) {
     const res = await fetch(endpoint, {
@@ -94,6 +97,28 @@ export function AdminTaxonomyClient({
     setMessage(body?.error?.message || "删除失败");
   }
 
+  async function merge(sourceId: string, targetTagId: string) {
+    if (!targetTagId) {
+      setMessage("请选择目标标签");
+      return;
+    }
+    if (!confirm("确认合并标签？源标签会被删除，内容关联会移动到目标标签。")) return;
+    const res = await fetch(`${endpoint}/${sourceId}/merge`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ targetTagId })
+    });
+    const body = await res.json().catch(() => null);
+    if (!res.ok) {
+      setMessage(body?.error?.message || "合并失败");
+      return;
+    }
+    setItems((old) => old.filter((item) => item.id !== sourceId));
+    setPendingMerge(null);
+    setMergeTargetId("");
+    setMessage(body?.message || "标签已合并");
+  }
+
   return (
     <div className="admin-stack">
       <div className="admin-title-row">
@@ -133,6 +158,25 @@ export function AdminTaxonomyClient({
             </button>
           </div>
         )}
+        {pendingMerge && canMerge && (
+          <div className="mb-4 grid gap-3 rounded border border-[var(--border)] bg-[var(--surface)] p-4 md:grid-cols-[1fr_260px_auto_auto]">
+            <div>
+              <p className="font-medium">合并标签：{pendingMerge.name}</p>
+              <p className="text-sm muted">源标签会被删除，已关联内容会移动到目标标签，重复关联会自动跳过。</p>
+            </div>
+            <select className="input" value={mergeTargetId} onChange={(event) => setMergeTargetId(event.target.value)}>
+              {items.filter((item) => item.id !== pendingMerge.id).map((item) => (
+                <option key={item.id} value={item.id}>{item.name}</option>
+              ))}
+            </select>
+            <button type="button" className="btn btn-primary" disabled={!mergeTargetId} onClick={() => merge(pendingMerge.id, mergeTargetId)}>
+              合并标签
+            </button>
+            <button type="button" className="btn" onClick={() => { setPendingMerge(null); setMergeTargetId(""); }}>
+              取消
+            </button>
+          </div>
+        )}
         <table className="admin-table">
           <thead>
             <tr>
@@ -159,6 +203,19 @@ export function AdminTaxonomyClient({
                         <button className="btn size-9 p-0" onClick={() => setEditing(item.id)} title="编辑">
                           <Pencil className="size-4" />
                         </button>
+                        {canMerge && (
+                          <button
+                            className="btn px-3"
+                            onClick={() => {
+                              setPendingMerge(item);
+                              setMergeTargetId(items.find((entry) => entry.id !== item.id)?.id || "");
+                            }}
+                            title="合并"
+                            disabled={items.length < 2}
+                          >
+                            合并
+                          </button>
+                        )}
                         <button className="btn size-9 p-0" onClick={() => remove(item.id)} title="删除">
                           <Trash2 className="size-4" />
                         </button>
