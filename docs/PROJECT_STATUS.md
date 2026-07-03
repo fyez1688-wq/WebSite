@@ -1,6 +1,6 @@
 # Project Status
 
-最后更新：2026-07-03
+最后更新：2026-07-04
 
 ## 已完成
 
@@ -18,12 +18,12 @@
   - `/admin/content/trash`
   - `/admin/contents` 旧路径跳转兼容。
 - 内容功能：服务端分页、筛选、排序、批量发布/下架/推荐/置顶/删除、创建、编辑、保存草稿、发布、下架、软删除、恢复、永久删除、管理员预览。
-- 图片上传：`/api/admin/uploads` 支持 JPG/JPEG/PNG/WEBP，本地保存到 `public/uploads/covers`，有大小、MIME、文件签名校验。
+- 图片上传：`/api/admin/uploads` 支持 JPG/JPEG/PNG/WEBP，本地保存到 `public/uploads/covers`，有大小、MIME、文件签名和宽高校验；管理员可删除受控上传图片，存储服务已有本地适配层。
 - 服务层：
   - `services/content.ts`
   - `services/storage.ts`
   - `services/operation-log.ts`
-- Docker：`db`、`app`、`caddy` 服务可启动，PostgreSQL 18 数据卷挂载为 `/var/lib/postgresql`。
+- Docker：`db`、`app`、`caddy` 服务可启动，PostgreSQL 18 数据卷挂载为 `/var/lib/postgresql`，上传文件使用 `uploaded-files` 卷挂载到 `/app/public/uploads`。
 - 管理员默认账号安全修复：`.env.example` 已改为占位强密码，本地 `.env` 已改为非 `admin/admin`，`prisma/seed.ts` 会拒绝弱管理员配置，`npm run admin:reset` 可显式重置管理员并禁用旧 `admin` 账号。
 - Git 基线：已建立首次提交；`.env`、`.env.local`、`node_modules/`、`.next/`、`.next-build/`、`.next-final/`、根目录 `/uploads/`、`public/uploads/` 和遗留 `scripts/reset-admin.ts` 不进入 Git。
 - 后台权限验收：`/admin` 页面在 middleware 层校验 NextAuth JWT，未登录跳 `/login`，普通用户跳 `/403`；后台 API 在 Route Handler 中通过 `requireAdminApi()` 区分未登录 401 和非管理员 403。
@@ -38,7 +38,7 @@
 - 标签管理：可创建、编辑、删除、颜色字段和重复标签合并；标签颜色 UI 仍较基础。
 - 操作日志：内容、分类、标签、用户等写操作有记录；日志字段已扩展，但历史日志可能字段为空。
 - SEO：已有 metadata、sitemap、robots、部分页面标题；内容 SEO 字段已入库，但前台详情页尚未完整使用全部 SEO 字段。
-- 文件上传：本地 StorageService 已有；对象存储 R2/S3/OSS/COS 仅预留，未接入。
+- 文件上传：本地 StorageService 已有统一适配接口；对象存储 R2/S3/OSS/COS 仍未接入。
 - 测试：完成命令验证和部分接口冒烟测试；没有 Playwright/E2E 自动化套件。
 
 ## 未开始
@@ -47,7 +47,6 @@
 - 用户注销账号。
 - 网站设置后台编辑保存。
 - 内容列表卡片/列表视图切换、骨架屏、请求失败重试按钮。
-- 上传图片删除接口。
 - Playwright 自动化测试。
 
 ## 存在问题
@@ -146,6 +145,7 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 - `website-db-1`：PostgreSQL 18，healthy。
 - `website-app-1`：Next.js standalone app，端口 `3000:3000`。
 - `website-caddy-1`：Caddy，端口 `80`、`443`。
+- `website_uploaded-files`：上传文件持久化卷，挂载到 app 容器 `/app/public/uploads`。
 
 ## 已通过的验证命令
 
@@ -160,6 +160,7 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 - `npm run test:markdown`
 - `npm run test:category-delete`
 - `npm run test:tag-merge`
+- `npm run test:upload`
 
 接口冒烟验证：
 
@@ -169,6 +170,7 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 - Markdown 冒烟测试通过：GFM 表格、任务列表、行内代码、代码块语言、未知语言降级、复制按钮、安全外链、危险链接降级、原始 HTML 过滤、草稿/下架/软删除前台不可访问、管理员预览不增加浏览量。
 - 分类移动删除验收通过：有关联内容的分类直接删除会失败；选择目标分类后可移动内容并删除原分类；内容分类已更新。
 - 标签合并验收通过：源标签关联迁移到目标标签，重复关联被跳过，源标签被删除。
+- 上传验收通过：未登录上传返回 401，普通用户上传返回 403，伪装图片、超宽图片和非法删除路径被拒绝，管理员上传返回图片宽高，管理员可删除受控上传图片。
 - 管理员创建内容成功。
 - 发布后前台详情页返回 200。
 - 下架成功。

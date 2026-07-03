@@ -60,13 +60,14 @@
 
 ## P2：功能增强
 
-### 上传安全增强
+### 已完成：上传安全增强
 
 - 目标：增加图片宽高检查、删除接口、对象存储适配层。
-- 涉及文件：`services/storage.ts`、`app/api/admin/uploads/route.ts`。
+- 涉及文件：`services/storage.ts`、`app/api/admin/uploads/route.ts`、`Dockerfile`、`docker-compose.yml`、`scripts/upload-smoke.js`、`package.json`、`.env.example`。
 - 验收条件：非图片、超大图片、伪装图片、普通用户上传均失败。
-- 需要运行：上传 API 测试。
-- 风险：Node 环境解析图片尺寸可能需要新增依赖。
+- 已运行：`npm run lint`、`npx tsc --noEmit`、`npm run test:upload`、`npm run test:permissions`、`npm run test:markdown`、`npm run test:category-delete`、`git diff --check`。
+- 结果：上传服务新增本地存储适配层，上传前解析 JPG/PNG/WEBP 宽高并限制默认最大 4096x4096；`DELETE /api/admin/uploads` 可删除受控上传图片；验收覆盖未登录 401、普通用户 403、伪装图片失败、超宽图片失败、非法删除路径失败、管理员上传和删除。
+- 限制：对象存储只完成适配接口和本地实现，R2/S3/OSS/COS 外部 Provider 尚未接入。
 
 ### Playwright 测试
 

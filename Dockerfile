@@ -27,6 +27,7 @@ COPY --from=builder /app/.next-final/standalone ./
 COPY --from=builder /app/.next-final/static ./.next-final/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+RUN mkdir -p /app/public/uploads && chown -R nextjs:nextjs /app/public/uploads
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.js"]
