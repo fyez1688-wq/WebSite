@@ -35,4 +35,9 @@
 - 所有后台写操作必须进行服务端管理员验证，不能信任前端传入的 `userId`、`role`、`isAdmin`、`email`。
 - 管理员权限必须从安全服务端会话获取，优先复用 `requireAdmin()` / `requireAdminApi()`。
 - 提交或部署前检查 `.env`、密码、Token、数据库数据、上传私密文件没有进入版本控制。
-
+- 每次大量 Docker 构建、测试或部署后，应先检查 Docker 空间占用，推荐先执行 `docker system df` 和 `docker system df -v`，再决定清理方式。
+- 可以安全清理 Docker build cache、dangling images、已停止且确认不再需要的临时容器。
+- 禁止未经确认自动清理 Docker volume；不得新增或执行 `docker volume prune`、`docker system prune -a --volumes` 等会删除 volume 的危险命令。
+- 特别保护 PostgreSQL 数据 volume、Caddy 数据和证书 volume、`uploaded-files` 上传文件 volume。
+- 清理 Docker volume 前必须确认 volume 名称、volume 用途、是否已有数据库备份、是否已有上传文件备份，并取得用户明确同意。
+- 不允许为了释放空间误删数据库、HTTPS 证书、上传文件或生产数据。

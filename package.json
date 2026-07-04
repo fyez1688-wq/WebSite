@@ -18,7 +18,12 @@
     "test:markdown": "node scripts/markdown-smoke.js",
     "test:category-delete": "node scripts/category-delete-smoke.js",
     "test:tag-merge": "node scripts/tag-merge-smoke.js",
-    "test:upload": "node scripts/upload-smoke.js"
+    "test:upload": "node scripts/upload-smoke.js",
+    "docker:df": "docker system df",
+    "docker:df:detail": "docker system df -v",
+    "docker:clean:build-cache": "docker builder prune -f",
+    "docker:clean:images": "docker image prune -f",
+    "docker:clean:containers": "docker container prune -f"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

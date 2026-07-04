@@ -57,6 +57,17 @@
 - `middleware.ts` 仍存在，Next 16 提示该约定已弃用，建议后续迁移到 `proxy.ts`；之前删除/改名被 Windows 权限拒绝过。
 - 收藏表对内容是 cascade 删除；软删除内容可保留收藏，永久删除会删除收藏。
 
+## Docker 空间占用与清理
+
+- Docker 空间会随着构建、测试和镜像增长。
+- 主要占用来源是 Docker 镜像、Docker 构建缓存、停止容器和 Docker volume。
+- 当前项目存在上传文件持久化卷：`uploaded-files:/app/public/uploads`。
+- `uploaded-files` 保存用户上传图片，不允许自动清理。
+- PostgreSQL 数据 volume、Caddy 数据和证书 volume 也不允许自动清理。
+- 当前推荐优先清理构建缓存、dangling images、已停止且确认不再需要的临时容器。
+- volume 清理必须人工确认 volume 名称和用途，并在数据库、上传文件等关键数据已有备份且用户明确同意后才能执行。
+- 已增加安全 npm scripts 和 README 运维说明；不会提供自动清理 volume 的脚本。
+
 ## 当前可访问页面
 
 - `/`
@@ -161,6 +172,7 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 - `npm run test:category-delete`
 - `npm run test:tag-merge`
 - `npm run test:upload`
+- `npm run docker:df`
 
 接口冒烟验证：
 

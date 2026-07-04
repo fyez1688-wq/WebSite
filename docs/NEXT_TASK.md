@@ -85,6 +85,15 @@
 - 需要运行：`npm run build`、`docker compose up -d --build app`。
 - 风险：当前环境删除 `.next-final` 会 EPERM，可能需要重启终端/系统或改用新 distDir。
 
+### 已完成：Docker 空间安全清理脚本和文档
+
+- 目标：增加安全查看和清理 Docker 占用的维护入口，避免误删数据库、证书或上传文件。
+- 涉及文件：`AGENTS.md`、`README.md`、`package.json`、`docs/PROJECT_STATUS.md`、`docs/ARCHITECTURE.md`、`docs/DECISIONS.md`。
+- 验收条件：能查看 Docker 空间占用；能安全清理构建缓存；不会自动删除 volume；不会删除数据库数据；README 或 docs 中说明如何手动判断 volume 是否可以删除。
+- 已运行：`npm run lint`、`npx tsc --noEmit`、`npm run docker:df`、`git diff --check`。
+- 结果：新增安全 npm scripts：`docker:df`、`docker:df:detail`、`docker:clean:build-cache`、`docker:clean:images`、`docker:clean:containers`；README 和 docs 已说明默认只清理构建缓存、dangling images、已停止临时容器，不自动清理 volume。
+- 风险：Docker volume 可能保存 PostgreSQL 数据、Caddy 证书和用户上传文件，误删会造成数据丢失；本任务未新增任何 volume 清理脚本。
+
 ## P3：以后可以完成
 
 ### 忘记密码和用户注销

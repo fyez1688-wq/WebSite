@@ -76,11 +76,20 @@ npx prisma migrate deploy && npm run seed && node server.js
 
 `docker-compose.yml` 包含：
 
-- `db`：PostgreSQL 18，volume 挂载 `/var/lib/postgresql`。
-- `app`：Next.js standalone 镜像，依赖 db healthy。
-- `caddy`：反向代理，绑定 80/443，读取 `docker/Caddyfile`。
+- `db`：PostgreSQL 18，volume 挂载到容器 `/var/lib/postgresql`，保存数据库数据。
+- `app`：Next.js standalone 镜像，依赖 db healthy；上传文件 volume 挂载到 `/app/public/uploads`，保存用户上传文件。
+- `caddy`：反向代理，绑定 80/443，读取 `docker/Caddyfile`；Caddy data/config volume 保存证书、账户和运行配置。
 
 本地访问主要使用 `http://localhost:3000`。正式域名使用 Caddy 代理到 app。
+
+持久化 volume：
+
+- `postgres-data`：PostgreSQL 数据，不能随意清理。
+- `uploaded-files`：用户上传文件，不能随意清理。
+- `caddy-data`：Caddy 证书和账户数据，不能随意清理。
+- `caddy-config`：Caddy 运行配置数据，不能随意清理。
+
+volume 是持久化数据，不等于临时缓存。Docker 空间维护应先用 `docker system df`、`docker system df -v` 查看占用。默认只清理构建缓存、dangling images、已停止且确认不再需要的临时容器；不得自动清理 volume。清理任何 volume 前必须确认名称、用途、备份和用户授权。
 
 ## 关键文件
 

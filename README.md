@@ -69,6 +69,49 @@ docker compose up -d --build
 
 Caddy 会自动申请 HTTPS 证书。数据库数据保存在 Docker volume `postgres-data`。
 
+## Docker 空间维护
+
+大量构建、测试或部署后，先查看 Docker 空间占用：
+
+```bash
+docker system df
+docker system df -v
+```
+
+可以优先清理构建缓存、dangling images 和已停止且确认不再需要的临时容器：
+
+```bash
+docker builder prune -f
+docker image prune -f
+docker container prune -f
+```
+
+也可以使用 npm scripts：
+
+```bash
+npm run docker:df
+npm run docker:df:detail
+npm run docker:clean:build-cache
+npm run docker:clean:images
+npm run docker:clean:containers
+```
+
+不要随便执行以下命令：
+
+```bash
+docker volume prune
+docker system prune -a --volumes
+```
+
+原因：Docker volume 可能保存 PostgreSQL 数据、Caddy HTTPS 证书和用户上传文件。当前项目至少包含这些持久化 volume：
+
+- `postgres-data`：数据库数据。
+- `uploaded-files`：用户上传图片，挂载到 `/app/public/uploads`。
+- `caddy-data`：Caddy 证书和账户数据。
+- `caddy-config`：Caddy 运行配置数据。
+
+volume 是持久化数据，不等于临时缓存。清理任何 volume 前，必须确认 volume 名称、用途、是否已有数据库备份、是否已有上传文件备份，并取得用户明确同意。
+
 ## 数据备份和恢复
 
 Windows PowerShell：

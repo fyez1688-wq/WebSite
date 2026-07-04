@@ -60,3 +60,10 @@
 - 影响范围：`Dockerfile`、`docker-compose.yml`、`docker/Caddyfile`、README。
 - 修改前检查：PostgreSQL 数据卷、环境变量、Caddy 域名、HTTPS、迁移启动命令。
 
+## Docker 清理策略：默认只自动清理构建缓存、dangling images 和已停止临时容器，不自动清理 volume
+
+- 原因：volume 可能保存 PostgreSQL 数据、Caddy HTTPS 证书和用户上传文件，误删会造成数据丢失或网站不可用。
+- 影响范围：Docker 运维、空间清理、数据库安全、上传文件保存、HTTPS 证书保存。
+- 默认策略：只自动或半自动清理构建缓存、dangling images、已停止且确认不再需要的临时容器。
+- 禁止事项：不得未经确认执行 `docker volume prune`；不得未经确认删除 PostgreSQL、Caddy 或用户上传文件 volume。
+- 修改前检查：清理 volume 前必须确认 volume 名称、用途、是否已有备份，并取得用户明确同意。
