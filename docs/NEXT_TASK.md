@@ -58,7 +58,16 @@
 - 结果：后台标签管理可选择目标标签合并；服务端事务内迁移 `ContentTag` 关联，重复关系自动跳过，源标签删除并写入操作日志。
 - 风险：后台 UI 目前使用浏览器原生 `confirm` 做二次确认，后续可替换为统一弹窗组件。
 
-## P2：功能增强
+## P2：功能增强（已完成）
+
+P2 阶段已完成并提交：
+
+- `c62bb3a feat: harden image uploads`
+- `a827617 chore: document safe docker cleanup`
+- `4013576 fix: improve Windows build cleanup`
+- `6bbf57b test: add playwright e2e coverage`
+
+P2 总体验收已在 2026-07-04 执行。代码、类型、权限、Markdown、分类删除、上传和基础 Playwright E2E 验收均通过；Docker app 构建复验仍受 Docker Hub EOF/网络问题影响，未进入项目编译阶段。
 
 ### 已完成：上传安全增强
 
@@ -69,9 +78,9 @@
 - 结果：上传服务新增本地存储适配层，上传前解析 JPG/PNG/WEBP 宽高并限制默认最大 4096x4096；`DELETE /api/admin/uploads` 可删除受控上传图片；验收覆盖未登录 401、普通用户 403、伪装图片失败、超宽图片失败、非法删除路径失败、管理员上传和删除。
 - 限制：对象存储只完成适配接口和本地实现，R2/S3/OSS/COS 外部 Provider 尚未接入。
 
-### 已完成：Playwright 测试
+### 已完成：Playwright E2E 测试
 
-- 目标：覆盖登录、后台权限、创建草稿、发布、下架、上传、批量操作、回收站。
+- 目标：建立稳定、可重复运行的基础浏览器端到端测试，覆盖登录、后台权限、内容主流程、上传和分类移动后删除。
 - 涉及文件：`playwright.config.ts`、`tests/e2e/*`、`package.json`、`README.md`、`docs/PROJECT_STATUS.md`。
 - 验收条件：测试可在本地和 CI 执行，失败能定位问题。
 - 已运行：`npm run lint`、`npx tsc --noEmit`、`npm run test:permissions`、`npm run test:markdown`、`npm run test:category-delete`、`npm run test:upload`、`npm run test:e2e`、`git diff --check`。
@@ -97,7 +106,57 @@
 - 结果：新增安全 npm scripts：`docker:df`、`docker:df:detail`、`docker:clean:build-cache`、`docker:clean:images`、`docker:clean:containers`；README 和 docs 已说明默认只清理构建缓存、dangling images、已停止临时容器，不自动清理 volume。
 - 风险：Docker volume 可能保存 PostgreSQL 数据、Caddy 证书和用户上传文件，误删会造成数据丢失；本任务未新增任何 volume 清理脚本。
 
-## P3：以后可以完成
+## P3：下一阶段候选任务
+
+P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGENTS.md` 读取项目文档并只处理一项独立任务。
+
+### 标签合并高级完善或验收
+
+- 目标：在已完成的标签合并基础上补充更细的 UI 状态、批量选择或冲突提示验收。
+- 验收条件：合并前后内容关联、重复关系跳过、操作日志和错误提示均有自动化覆盖。
+- 风险：不要改动已通过的标签合并事务逻辑，除非测试暴露真实缺陷。
+
+### 对象存储 Provider 接入
+
+- 目标：接入 Cloudflare R2 / S3 兼容存储 Provider，复用现有 `StorageService` 适配层。
+- 验收条件：本地上传仍可用；R2/S3 配置缺失时不会影响本地开发；上传、删除和 URL 生成均有测试。
+- 风险：不能提交访问密钥、Token 或真实 bucket 配置；迁移已有上传文件前必须有备份方案。
+
+### 更完整的 Playwright 覆盖
+
+- 目标：扩展 E2E 到批量操作、用户收藏、搜索筛选、回收站永久删除和更多后台表单细节。
+- 验收条件：测试数据继续使用 `E2E_TEST_` 前缀并只清理自身数据；失败截图和 trace 仍被忽略。
+- 风险：测试不能依赖生产数据，不能清空数据库。
+
+### CI 自动化测试
+
+- 目标：在 CI 中运行 lint、TypeScript、smoke tests 和 Playwright E2E。
+- 验收条件：CI 能初始化测试数据库、安装 Playwright 浏览器并上传失败报告。
+- 风险：CI 密钥和测试账号必须通过安全变量注入。
+
+### 数据库备份和恢复脚本
+
+- 目标：补充 PostgreSQL 备份、恢复和演练文档。
+- 验收条件：备份文件路径、恢复步骤、校验方式和失败处理清晰；恢复流程在非生产环境验证。
+- 风险：恢复脚本不得误连生产库，不得覆盖未确认的数据。
+
+### 网站内容运营功能
+
+- 目标：完善公告、轮播图、站点设置等运营后台保存和前台读取能力。
+- 验收条件：管理员可编辑，前台展示生效，权限和操作日志完整。
+- 风险：缓存策略要避免修改后不生效。
+
+### sitemap / robots / SEO 验收
+
+- 目标：系统验收 sitemap、robots、metadata 和内容 SEO 字段前台使用。
+- 验收条件：公开内容进入 sitemap，草稿/下架/软删除内容不暴露，详情页使用 SEO 标题和描述。
+- 风险：不要让后台预览或私有内容被搜索引擎索引。
+
+### 生产部署检查清单
+
+- 目标：整理上线前检查项，包括环境变量、数据库迁移、Docker volume、备份、Caddy HTTPS、管理员账号和回滚。
+- 验收条件：README 或 docs 中有可执行清单，并标明危险操作禁止项。
+- 风险：部署文档不能包含密码、Token 或真实私密配置。
 
 ### 忘记密码和用户注销
 

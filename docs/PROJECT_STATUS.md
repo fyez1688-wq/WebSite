@@ -32,6 +32,7 @@
 - 前台 Markdown 渲染：正式详情页、后台编辑器预览和管理员独立预览页统一使用 `components/markdown-preview.tsx`，支持 GitHub 风格 Markdown、表格、任务列表、代码块语言标记、代码复制按钮和安全链接/图片过滤。
 - 分类移动后删除：分类下存在内容时，后台可选择目标分类，服务端在事务内移动内容并删除原分类，同时写入操作日志；直接删除仍会被阻止。
 - 标签合并：后台标签管理可将源标签合并到目标标签，服务端事务内迁移 `ContentTag` 关联、跳过重复关系、删除源标签并写入操作日志。
+- P2 运维与质量增强：上传安全增强、Docker 空间安全清理脚本和文档、Windows `.next-final` 构建清理、基础 Playwright E2E 测试均已完成并提交。
 
 ## 部分完成
 
@@ -176,6 +177,12 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 - `npm run build`
 - `npm run test:e2e`
 
+P2 总体验收（2026-07-04）：
+
+- 已通过：`npm run lint`、`npx tsc --noEmit`、`npm run test:permissions`、`npm run test:markdown`、`npm run test:category-delete`、`npm run test:upload`、`npm run test:e2e`、`npm run docker:df`、`npm run clean`、`npm run build`、`git diff --check`。
+- Docker app 构建复验未通过：`docker compose up -d --build app` 停在 Docker Hub OAuth token 获取，错误为 `Post "https://auth.docker.io/token": EOF`；未进入项目依赖安装或 Next.js 编译阶段，当前按外部网络问题记录。
+- `npm run docker:df` 显示当前主要可回收空间来自 Docker build cache；未执行任何 Docker 清理命令，也未清理 volume。
+
 接口冒烟验证：
 
 - `admin@pzq1688.local` 登录成功并可访问 `/admin`。
@@ -193,8 +200,8 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 
 ## 当前已知错误
 
-- Windows 本机如遇 `.next-final` 文件锁，应先执行 `npm run clean`；若仍失败，通常是 Node/Next 进程、终端、编辑器预览、文件管理器或安全软件占用构建目录，需要关闭占用后重试。本机 `npm run build` 默认使用 `.next-local-build`，旧 `.next-final` 锁定不再阻断本机构建。当前受限 shell 中普通权限 `npm run clean` 和 `npm run build` 曾分别出现 `EPERM rename/unlink` 与 `spawn EPERM`；使用完整本机权限运行后 `npm run clean` 和 `npm run build` 均已通过。
-- 本轮 Docker app 构建验证被外部网络阻塞：Docker Hub metadata 请求出现 EOF，重试后 `npm ci` 也曾出现 `ECONNRESET`；尚未发现 Dockerfile 或项目代码编译错误。
+- Windows 本机如遇 `.next-final` 文件锁，应先执行 `npm run clean`；若仍失败，通常是 Node/Next 进程、终端、编辑器预览、文件管理器或安全软件占用构建目录，需要关闭占用后重试。本机 `npm run build` 默认使用 `.next-local-build`，旧 `.next-final` 锁定不再阻断本机构建。历史受限 shell 中普通权限 `npm run clean` 和 `npm run build` 曾分别出现 `EPERM rename/unlink` 与 `spawn EPERM`；本次 P2 总体验收中普通 shell 执行 `npm run clean` 和 `npm run build` 均已通过。
+- Docker app 构建验证仍可能被外部网络阻塞：Docker Hub metadata 或 OAuth token 请求出现 EOF，重试时也曾遇到 `npm ci` `ECONNRESET`；尚未发现 Dockerfile 或项目代码编译错误。
 - Windows 本机 `npm run admin:reset` 因 `tsx`/esbuild `spawn EPERM` 失败；Docker 容器内执行成功。
 
 ## Playwright E2E
@@ -205,7 +212,7 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 - 测试账号：优先读取 `E2E_ADMIN_EMAIL`、`E2E_ADMIN_PASSWORD`，未设置时回退到 `.env` 的 `ADMIN_EMAIL`、`ADMIN_PASSWORD`；普通用户可通过 `E2E_USER_EMAIL`、`E2E_USER_PASSWORD` 指定，未设置时测试生成唯一账号并走注册接口。
 - 数据隔离：测试分类、内容和用户使用 `E2E_TEST_` 前缀或唯一邮箱，测试结束后仅通过受控 API 清理自己创建的数据。
 - 失败输出：`test-results/`、`playwright-report/`，均已被 `.gitignore` 忽略。
-- 当前未覆盖：完整批量操作、所有后台表单交互细节、对象存储上传、跨浏览器矩阵和 CI 数据库初始化流程。
+- 当前未覆盖：完整批量操作、用户收藏、搜索筛选、回收站永久删除细节、所有后台表单交互细节、对象存储上传、跨浏览器矩阵和 CI 数据库初始化流程。
 
 ## 当前管理员初始化方式
 
