@@ -33,6 +33,7 @@
 - 分类移动后删除：分类下存在内容时，后台可选择目标分类，服务端在事务内移动内容并删除原分类，同时写入操作日志；直接删除仍会被阻止。
 - 标签合并：后台标签管理可将源标签合并到目标标签，服务端事务内迁移 `ContentTag` 关联、跳过重复关系、删除源标签并写入操作日志。
 - P2 运维与质量增强：上传安全增强、Docker 空间安全清理脚本和文档、Windows `.next-final` 构建清理、基础 Playwright E2E 测试均已完成并提交。
+- 生产部署检查清单：`docs/PRODUCTION_CHECKLIST.md` 已整理生产环境变量、管理员账号、Docker volume、Caddy HTTPS、迁移、备份、日志、验收和回滚检查项。
 
 ## 部分完成
 
@@ -49,6 +50,7 @@
 - 用户注销账号。
 - 网站设置后台编辑保存。
 - 内容列表卡片/列表视图切换、骨架屏、请求失败重试按钮。
+- 生产监控、告警和独立 app HTTP healthcheck。
 
 ## 存在问题
 
@@ -203,6 +205,7 @@ P2 总体验收（2026-07-04）：
 - Windows 本机如遇 `.next-final` 文件锁，应先执行 `npm run clean`；若仍失败，通常是 Node/Next 进程、终端、编辑器预览、文件管理器或安全软件占用构建目录，需要关闭占用后重试。本机 `npm run build` 默认使用 `.next-local-build`，旧 `.next-final` 锁定不再阻断本机构建。历史受限 shell 中普通权限 `npm run clean` 和 `npm run build` 曾分别出现 `EPERM rename/unlink` 与 `spawn EPERM`；本次 P2 总体验收中普通 shell 执行 `npm run clean` 和 `npm run build` 均已通过。
 - Docker app 构建验证仍可能被外部网络阻塞：Docker Hub metadata 或 OAuth token 请求出现 EOF，重试时也曾遇到 `npm ci` `ECONNRESET`；尚未发现 Dockerfile 或项目代码编译错误。
 - Windows 本机 `npm run admin:reset` 因 `tsx`/esbuild `spawn EPERM` 失败；Docker 容器内执行成功。
+- 正式上线前仍需人工确认 `pzq1688.com` DNS 指向当前服务器、80/443 可访问、生产 `.env` 使用强随机密钥、数据库和上传文件已备份，并完成生产或等价环境部署验收。
 
 ## Playwright E2E
 

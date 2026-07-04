@@ -75,6 +75,8 @@ npm run build
 
 ## 云服务器 Docker Compose 部署
 
+上线前先按 [生产部署检查清单](docs/PRODUCTION_CHECKLIST.md) 完成环境变量、备份、Docker volume、Caddy HTTPS、测试和回滚检查。
+
 1. 将代码上传到服务器。
 2. 域名 `pzq1688.com` 的 A 记录指向服务器公网 IP。
 3. 创建生产环境变量：
