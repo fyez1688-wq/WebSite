@@ -5,6 +5,7 @@ node_modules/
 .next/
 .next-build/
 .next-final/
+.next-local-build/
 out/
 
 # Build
@@ -60,3 +61,4 @@ public/uploads/
 # Temporary files
 tmp/
 temp/
+.cleanup-stale/

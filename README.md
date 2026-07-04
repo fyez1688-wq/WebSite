@@ -44,11 +44,33 @@ npm run admin:reset
 ## 常用命令
 
 ```bash
+npm run clean
 npm run lint
 npm run build
 npm run prisma:migrate
 npm run seed
 ```
+
+## Windows 本机构建清理
+
+项目在 `next.config.ts` 中通过 `NEXT_DIST_DIR` 设置 Next.js `distDir`。Docker 构建显式使用 `.next-final/`，Windows 本机默认使用 `.next-local-build/`，避免反复触碰历史锁定的 `.next-final/`。如果 Windows 上出现类似错误：
+
+```text
+EPERM: operation not permitted, unlink '.next-final/diagnostics/build-diagnostics.json'
+```
+
+通常是 `.next-final` 内文件被 Node/Next 进程、终端、编辑器预览、文件管理器或安全软件占用。先执行：
+
+```bash
+npm run clean
+npm run build
+```
+
+`npm run clean` 会清理 `.next`、`.next-build`、`.next-final`、`.next-local-build`、`out` 和 `tsconfig.tsbuildinfo`。它不会清理 `.env`、`public/uploads`、`uploads`、`prisma`、数据库文件、Docker volume 或源代码。
+
+在 Windows 上，如果构建目录无法直接删除，脚本会先尝试把旧目录隔离到 `.cleanup-stale/`，让活动构建路径空出来；关闭占用进程后可以再次执行 `npm run clean` 清理隔离目录。
+
+如果 `npm run clean` 仍提示 Windows 文件锁，请关闭 `npm run dev`、其他 Next/Node 进程、占用项目目录的终端或编辑器预览；必要时重启终端或电脑后再执行。
 
 ## 云服务器 Docker Compose 部署
 

@@ -24,6 +24,7 @@
   - `services/storage.ts`
   - `services/operation-log.ts`
 - Docker：`db`、`app`、`caddy` 服务可启动，PostgreSQL 18 数据卷挂载为 `/var/lib/postgresql`，上传文件使用 `uploaded-files` 卷挂载到 `/app/public/uploads`。
+- Windows 本机构建清理：`.next-final` 来源于 `next.config.ts` 的 `distDir`；Docker 通过 `NEXT_DIST_DIR=.next-final` 继续使用该目录，本机默认改用 `.next-local-build` 避免触碰历史锁定目录；`npm run clean` 可跨平台清理 `.next`、`.next-build`、`.next-final`、`.next-local-build`、`out` 和 `tsconfig.tsbuildinfo`，Windows 下可将旧构建目录隔离到 `.cleanup-stale/`。
 - 管理员默认账号安全修复：`.env.example` 已改为占位强密码，本地 `.env` 已改为非 `admin/admin`，`prisma/seed.ts` 会拒绝弱管理员配置，`npm run admin:reset` 可显式重置管理员并禁用旧 `admin` 账号。
 - Git 基线：已建立首次提交；`.env`、`.env.local`、`node_modules/`、`.next/`、`.next-build/`、`.next-final/`、根目录 `/uploads/`、`public/uploads/` 和遗留 `scripts/reset-admin.ts` 不进入 Git。
 - 后台权限验收：`/admin` 页面在 middleware 层校验 NextAuth JWT，未登录跳 `/login`，普通用户跳 `/403`；后台 API 在 Route Handler 中通过 `requireAdminApi()` 区分未登录 401 和非管理员 403。
@@ -53,7 +54,6 @@
 
 - 当前 Windows 本机执行 `npm run admin:reset` 会因 `tsx`/esbuild `spawn EPERM` 失败；Docker 容器内执行成功。当前管理员重置统一通过 `docker compose exec -T app npm run admin:reset` 执行。
 - 本轮早期创建的旧脚本 `scripts/reset-admin.ts` 已不再被 `package.json` 引用，但 Windows 拒绝删除该文件；已加入 `.git/info/exclude` 做本地排除，不提交到仓库，后续可在文件锁解除后移除。
-- 本地 Windows 运行 `npm run build` 会因为 `.next-final` 文件锁失败：`EPERM: operation not permitted, unlink '.next-final/diagnostics/build-diagnostics.json'`。Docker 内生产构建已通过。
 - `middleware.ts` 仍存在，Next 16 提示该约定已弃用，建议后续迁移到 `proxy.ts`；之前删除/改名被 Windows 权限拒绝过。
 - 收藏表对内容是 cascade 删除；软删除内容可保留收藏，永久删除会删除收藏。
 
@@ -173,6 +173,8 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 - `npm run test:tag-merge`
 - `npm run test:upload`
 - `npm run docker:df`
+- `npm run clean`
+- `npm run build`
 
 接口冒烟验证：
 
@@ -190,7 +192,8 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 
 ## 当前已知错误
 
-- Windows 本机 `npm run build` 因 `.next-final` 文件锁失败；Docker 构建中 `next build` 成功。
+- Windows 本机如遇 `.next-final` 文件锁，应先执行 `npm run clean`；若仍失败，通常是 Node/Next 进程、终端、编辑器预览、文件管理器或安全软件占用构建目录，需要关闭占用后重试。本机 `npm run build` 默认使用 `.next-local-build`，旧 `.next-final` 锁定不再阻断本机构建。当前受限 shell 中普通权限 `npm run clean` 和 `npm run build` 曾分别出现 `EPERM rename/unlink` 与 `spawn EPERM`；使用完整本机权限运行后 `npm run clean` 和 `npm run build` 均已通过。
+- 本轮 Docker app 构建验证被外部网络阻塞：Docker Hub metadata 请求出现 EOF，重试后 `npm ci` 也曾出现 `ECONNRESET`；尚未发现 Dockerfile 或项目代码编译错误。
 - Windows 本机 `npm run admin:reset` 因 `tsx`/esbuild `spawn EPERM` 失败；Docker 容器内执行成功。
 
 ## 当前管理员初始化方式

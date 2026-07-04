@@ -2,9 +2,14 @@ node_modules
 .next
 .next-build
 .next-final
+.next-local-build
+.cleanup-stale
+out
 .env
 .git
 backups
 postgres-data
+public/uploads
+uploads
 *.log
 *.tsbuildinfo

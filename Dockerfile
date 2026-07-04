@@ -10,6 +10,7 @@ ENV DATABASE_URL=postgresql://fy_user:change_me@db:5432/fy_site?schema=public
 ENV NEXTAUTH_SECRET=build-time-secret
 ENV NEXTAUTH_URL=http://localhost:3000
 ENV NEXT_PUBLIC_SITE_URL=http://localhost:3000
+ENV NEXT_DIST_DIR=.next-final
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate

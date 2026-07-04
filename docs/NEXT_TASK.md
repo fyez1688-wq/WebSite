@@ -77,13 +77,15 @@
 - 需要运行：`npm run test:e2e` 或新增脚本。
 - 风险：Docker 数据库状态需要可重复初始化，不能使用 `migrate reset` 破坏生产。
 
-### Windows `.next-final` 文件锁问题
+### 已完成：Windows `.next-final` 文件锁问题
 
 - 目标：解决本机 `npm run build` 失败。
-- 涉及文件：`next.config.ts`、构建脚本、`.next-final` 清理策略。
+- 涉及文件：`package.json`、`next.config.ts`、`Dockerfile`、`.gitignore`、`tsconfig.json`、`scripts/clean-build.js`、`README.md`、`docs/PROJECT_STATUS.md`。
 - 验收条件：Windows 本机 `npm run build` 可执行；Docker build 继续通过。
-- 需要运行：`npm run build`、`docker compose up -d --build app`。
-- 风险：当前环境删除 `.next-final` 会 EPERM，可能需要重启终端/系统或改用新 distDir。
+- 已运行：`npm run lint`、`npx tsc --noEmit`、`npm run clean`、`npm run build`、`docker compose up -d --build app`、`git diff --check`。
+- 结果：`.next-final` 来源确认是 `next.config.ts` 的 `distDir`；Docker 通过 `NEXT_DIST_DIR=.next-final` 继续使用该目录，本机默认使用 `.next-local-build`，避免历史 `.next-final` 文件锁阻断本机构建；新增跨平台 `npm run clean`，清理 `.next`、`.next-build`、`.next-final`、`.next-local-build`、`out`、`tsconfig.tsbuildinfo`，Windows 下可先隔离到 `.cleanup-stale/`，并在 EPERM/EBUSY/ENOTEMPTY 时输出中文文件锁排查提示。
+- 验证结果：受限 shell 中普通权限 `npm run clean` 仍被旧构建目录 EPERM 阻止，普通权限 `npm run build` 出现 `spawn EPERM`；使用完整本机权限后 `npm run clean` 和 `npm run build` 均通过。Docker app 构建当前被 Docker Hub/npm 网络 EOF/ECONNRESET 阻塞，未进入项目编译错误。
+- 风险：当前机器旧构建目录仍可能被外部进程或安全软件锁定；如果普通权限 clean 失败，需要关闭占用或使用完整本机权限。Docker 构建需网络恢复后重试。
 
 ### 已完成：Docker 空间安全清理脚本和文档
 
