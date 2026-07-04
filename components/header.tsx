@@ -2,19 +2,20 @@
 
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
-import { Menu, Moon, Search, Sun, UserRound } from "lucide-react";
+import { Menu, Moon, Music2, Search, Sun, UserRound } from "lucide-react";
 import { useState } from "react";
+import { useMusicPlayer } from "@/components/music/music-player";
 
 const nav = [
   { href: "/", label: "首页" },
   { href: "/contents", label: "内容" },
-  { href: "/music", label: "听歌" },
   { href: "/search", label: "搜索" },
   { href: "/favorites", label: "我的收藏" }
 ];
 
 export function Header() {
   const { data: session } = useSession();
+  const { openMiniPlayer } = useMusicPlayer();
   const [open, setOpen] = useState(false);
   const [dark, setDark] = useState(false);
 
@@ -53,6 +54,14 @@ export function Header() {
           </form>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            className="btn size-10 rounded-full p-0 active:scale-95"
+            onClick={openMiniPlayer}
+            aria-label="打开音乐播放器"
+            title="打开音乐播放器"
+          >
+            <Music2 className="size-5" />
+          </button>
           <button className="btn size-10 p-0" onClick={toggleTheme} aria-label="切换主题">
             {dark ? <Sun className="size-5" /> : <Moon className="size-5" />}
           </button>

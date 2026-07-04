@@ -46,7 +46,7 @@
 
 - 数据模型：`MusicTrack` 保存歌曲标题、作者、封面、音频 URL、来源、授权、分类、排序、发布状态、首页推荐、播放量和软删除时间。
 - 前台页面：`/music` 展示已发布且未软删除的音乐，支持搜索歌曲名、作者、专辑和按分类筛选。
-- 首页：`app/page.tsx` 只读取 3 到 6 首 `isPublished = true`、`isFeatured = true`、`deletedAt = null` 的推荐音乐。
+- 顶部入口：`components/header.tsx` 在右侧按钮区显示圆形音乐图标，点击只展开迷你播放器，不自动播放。
 - 全站播放器：`components/music/music-player.tsx` 使用浏览器原生 `Audio`，`components/music/mini-player.tsx` 默认收起，用户主动点击后播放，页面内切换尽量保持播放状态。
 - 后台页面：`/admin/music` 通过管理员 layout 的 `requireAdmin()` 保护，表单提交到 `/api/admin/music`。
 - 后台 API：所有写操作调用 `requireAdminApi()` 和 `assertSameOrigin()`，不信任前端传入身份。

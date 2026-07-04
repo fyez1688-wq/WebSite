@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronDown, Music2, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
-import { useState } from "react";
 import { useMusicPlayer } from "@/components/music/music-player";
 
 function formatTime(value: number) {
@@ -14,16 +13,29 @@ function formatTime(value: number) {
 }
 
 export function MiniPlayer() {
-  const { current, isPlaying, toggle, next, previous, volume, setVolume, progress, duration, seek, error } =
-    useMusicPlayer();
-  const [open, setOpen] = useState(false);
+  const {
+    current,
+    isPlaying,
+    toggle,
+    next,
+    previous,
+    volume,
+    setVolume,
+    progress,
+    duration,
+    seek,
+    error,
+    isMiniPlayerOpen,
+    openMiniPlayer,
+    closeMiniPlayer
+  } = useMusicPlayer();
 
   return (
     <div className="fixed bottom-4 right-4 z-50 w-[calc(100vw-32px)] max-w-sm sm:bottom-5 sm:right-5">
-      {!open ? (
+      {!isMiniPlayerOpen ? (
         <button
           className="btn ml-auto min-w-0 shadow-lg"
-          onClick={() => setOpen(true)}
+          onClick={openMiniPlayer}
           aria-label="展开音乐播放器"
           title="展开音乐播放器"
         >
@@ -37,7 +49,7 @@ export function MiniPlayer() {
               <p className="truncate text-sm font-semibold">{current?.title || "未选择歌曲"}</p>
               <p className="truncate text-xs muted">{current?.artist || "点击歌曲卡片开始播放"}</p>
             </div>
-            <button className="btn size-9 p-0" onClick={() => setOpen(false)} aria-label="收起音乐播放器">
+            <button className="btn size-9 p-0" onClick={closeMiniPlayer} aria-label="收起音乐播放器">
               <ChevronDown className="size-4" />
             </button>
           </div>

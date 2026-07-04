@@ -2,12 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { ContentCard } from "@/components/content-card";
-import { MusicCard } from "@/components/music/music-card";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [banners, categories, announcements, featured, latest, hot, favoriteCount, music] =
+  const [banners, categories, announcements, featured, latest, hot, favoriteCount] =
     await prisma.$transaction([
       prisma.banner.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" }, take: 3 }),
       prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),
@@ -30,30 +29,7 @@ export default async function HomePage() {
         orderBy: [{ viewCount: "desc" }, { favoriteCount: "desc" }],
         take: 6
       }),
-      prisma.favorite.count(),
-      prisma.musicTrack.findMany({
-        where: { isPublished: true, isFeatured: true, deletedAt: null },
-        select: {
-          id: true,
-          title: true,
-          artist: true,
-          album: true,
-          description: true,
-          coverImage: true,
-          audioUrl: true,
-          sourceUrl: true,
-          license: true,
-          category: true,
-          duration: true,
-          sortOrder: true,
-          isFeatured: true,
-          playCount: true,
-          createdAt: true,
-          updatedAt: true
-        },
-        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
-        take: 6
-      })
+      prisma.favorite.count()
     ]);
   const hero = banners[0];
 
@@ -129,26 +105,6 @@ export default async function HomePage() {
       </section>
 
       <HomeBlock title="推荐内容" items={featured} />
-      <section className="container py-6">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">听歌放松</h2>
-            <p className="mt-1 text-sm muted">学习、阅读、写代码时的背景音乐。</p>
-          </div>
-          <Link href="/music" className="muted">
-            更多
-          </Link>
-        </div>
-        {music.length ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {music.map((item) => (
-              <MusicCard key={item.id} track={item} queue={music} compact />
-            ))}
-          </div>
-        ) : (
-          <div className="card p-8 text-center muted">暂无推荐音乐</div>
-        )}
-      </section>
       <HomeBlock title="最新内容" items={latest} />
       <HomeBlock title="热门内容" items={hot} />
       <Footer />

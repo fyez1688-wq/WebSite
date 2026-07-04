@@ -37,7 +37,7 @@
 - 听歌模块第一版：
   - 定位为学习、阅读、编程时的背景音乐播放器，不作为大型音乐平台。
   - 新增 `MusicTrack` 数据模型和正式迁移 `20260705000000_music_module`。
-  - 新增首页“听歌放松”模块、`/music` 音乐小角落、全站右下角默认收起迷你播放器。
+  - 新增顶部右侧圆形音乐入口、`/music` 音乐小角落、全站右下角默认收起迷你播放器。
   - 新增 `/admin/music` 后台音乐管理，支持新增、编辑、软删除、启用/禁用、首页推荐、排序、封面 URL/图片上传复用、音频 URL 和预览播放。
   - 新增公开 API `/api/music`、`/api/music/featured`、`/api/music/[id]/play`。
   - 新增后台 API `/api/admin/music`、`/api/admin/music/[id]`。
@@ -225,6 +225,13 @@ P2 总体验收（2026-07-04）：
 - 已执行：`docker compose up -d --build app`，用于让运行中的 Docker app 容器包含本轮新增音乐模块；构建和 Next.js 编译通过。
 - 已按规则在 Docker 构建前后运行 `npm run docker:df`；构建后主要可回收空间仍来自 Docker build cache，未执行任何 Docker 清理命令，也未清理 volume。
 - 宿主机直接执行 `npx prisma migrate deploy` 失败：当前 Docker PostgreSQL 未映射宿主 `localhost:5432`，容器内迁移验收已通过并使用当前 app 镜像中的 3 个迁移。
+
+音乐入口 UI 调整（2026-07-05）：
+
+- 已将首页大块“听歌放松”推荐区域和导航文字“听歌”改为顶部右侧圆形音乐图标入口；`/music` 页面和右下角迷你播放器保留。
+- 顶部音乐图标位于 `components/header.tsx` 的右侧按钮区，点击只展开迷你播放器，不自动播放。
+- 已通过：`npm run lint`、`npx tsc --noEmit`、`npm run test:music`、`git diff --check`。
+- 额外尝试 `npm run test:e2e`：首次失败于注册接口 429 限流；避开输出目录锁并提权重跑后仍因注册限流失败，非本次 Header/UI 改动路径。
 
 ## 当前已知错误
 

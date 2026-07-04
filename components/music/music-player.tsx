@@ -11,6 +11,9 @@ type MusicPlayerContextValue = {
   progress: number;
   duration: number;
   error: string;
+  isMiniPlayerOpen: boolean;
+  openMiniPlayer: () => void;
+  closeMiniPlayer: () => void;
   playTrack: (track: MusicTrackItem, queue?: MusicTrackItem[]) => void;
   toggle: () => void;
   next: () => void;
@@ -31,6 +34,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState("");
+  const [isMiniPlayerOpen, setMiniPlayerOpen] = useState(false);
 
   useEffect(() => {
     const audio = new Audio();
@@ -135,6 +139,9 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     progress,
     duration,
     error,
+    isMiniPlayerOpen,
+    openMiniPlayer: () => setMiniPlayerOpen(true),
+    closeMiniPlayer: () => setMiniPlayerOpen(false),
     playTrack,
     toggle,
     next: () => move(1),
