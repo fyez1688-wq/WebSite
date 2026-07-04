@@ -40,7 +40,7 @@
 - 操作日志：内容、分类、标签、用户等写操作有记录；日志字段已扩展，但历史日志可能字段为空。
 - SEO：已有 metadata、sitemap、robots、部分页面标题；内容 SEO 字段已入库，但前台详情页尚未完整使用全部 SEO 字段。
 - 文件上传：本地 StorageService 已有统一适配接口；对象存储 R2/S3/OSS/COS 仍未接入。
-- 测试：完成命令验证和部分接口冒烟测试；没有 Playwright/E2E 自动化套件。
+- 测试：完成命令验证、部分接口冒烟测试和基础 Playwright E2E 套件。
 
 ## 未开始
 
@@ -48,7 +48,6 @@
 - 用户注销账号。
 - 网站设置后台编辑保存。
 - 内容列表卡片/列表视图切换、骨架屏、请求失败重试按钮。
-- Playwright 自动化测试。
 
 ## 存在问题
 
@@ -175,6 +174,7 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 - `npm run docker:df`
 - `npm run clean`
 - `npm run build`
+- `npm run test:e2e`
 
 接口冒烟验证：
 
@@ -185,6 +185,7 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 - 分类移动删除验收通过：有关联内容的分类直接删除会失败；选择目标分类后可移动内容并删除原分类；内容分类已更新。
 - 标签合并验收通过：源标签关联迁移到目标标签，重复关联被跳过，源标签被删除。
 - 上传验收通过：未登录上传返回 401，普通用户上传返回 403，伪装图片、超宽图片和非法删除路径被拒绝，管理员上传返回图片宽高，管理员可删除受控上传图片。
+- Playwright E2E 覆盖：未登录/普通用户/管理员后台权限，内容草稿、发布、下架、回收站恢复，Markdown 前台渲染，上传权限与合法图片上传，分类移动后删除。
 - 管理员创建内容成功。
 - 发布后前台详情页返回 200。
 - 下架成功。
@@ -195,6 +196,16 @@ Docker 日志确认 `20260703010000_content_management` 已应用成功。
 - Windows 本机如遇 `.next-final` 文件锁，应先执行 `npm run clean`；若仍失败，通常是 Node/Next 进程、终端、编辑器预览、文件管理器或安全软件占用构建目录，需要关闭占用后重试。本机 `npm run build` 默认使用 `.next-local-build`，旧 `.next-final` 锁定不再阻断本机构建。当前受限 shell 中普通权限 `npm run clean` 和 `npm run build` 曾分别出现 `EPERM rename/unlink` 与 `spawn EPERM`；使用完整本机权限运行后 `npm run clean` 和 `npm run build` 均已通过。
 - 本轮 Docker app 构建验证被外部网络阻塞：Docker Hub metadata 请求出现 EOF，重试后 `npm ci` 也曾出现 `ECONNRESET`；尚未发现 Dockerfile 或项目代码编译错误。
 - Windows 本机 `npm run admin:reset` 因 `tsx`/esbuild `spawn EPERM` 失败；Docker 容器内执行成功。
+
+## Playwright E2E
+
+- 配置文件：`playwright.config.ts`。
+- 测试目录：`tests/e2e/`。
+- 默认地址：`http://localhost:3000`，可通过 `PLAYWRIGHT_BASE_URL` 覆盖。
+- 测试账号：优先读取 `E2E_ADMIN_EMAIL`、`E2E_ADMIN_PASSWORD`，未设置时回退到 `.env` 的 `ADMIN_EMAIL`、`ADMIN_PASSWORD`；普通用户可通过 `E2E_USER_EMAIL`、`E2E_USER_PASSWORD` 指定，未设置时测试生成唯一账号并走注册接口。
+- 数据隔离：测试分类、内容和用户使用 `E2E_TEST_` 前缀或唯一邮箱，测试结束后仅通过受控 API 清理自己创建的数据。
+- 失败输出：`test-results/`、`playwright-report/`，均已被 `.gitignore` 忽略。
+- 当前未覆盖：完整批量操作、所有后台表单交互细节、对象存储上传、跨浏览器矩阵和 CI 数据库初始化流程。
 
 ## 当前管理员初始化方式
 

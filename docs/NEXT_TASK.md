@@ -69,13 +69,14 @@
 - 结果：上传服务新增本地存储适配层，上传前解析 JPG/PNG/WEBP 宽高并限制默认最大 4096x4096；`DELETE /api/admin/uploads` 可删除受控上传图片；验收覆盖未登录 401、普通用户 403、伪装图片失败、超宽图片失败、非法删除路径失败、管理员上传和删除。
 - 限制：对象存储只完成适配接口和本地实现，R2/S3/OSS/COS 外部 Provider 尚未接入。
 
-### Playwright 测试
+### 已完成：Playwright 测试
 
 - 目标：覆盖登录、后台权限、创建草稿、发布、下架、上传、批量操作、回收站。
-- 涉及文件：新增 `tests/` 或 `e2e/`。
+- 涉及文件：`playwright.config.ts`、`tests/e2e/*`、`package.json`、`README.md`、`docs/PROJECT_STATUS.md`。
 - 验收条件：测试可在本地和 CI 执行，失败能定位问题。
-- 需要运行：`npm run test:e2e` 或新增脚本。
-- 风险：Docker 数据库状态需要可重复初始化，不能使用 `migrate reset` 破坏生产。
+- 已运行：`npm run lint`、`npx tsc --noEmit`、`npm run test:permissions`、`npm run test:markdown`、`npm run test:category-delete`、`npm run test:upload`、`npm run test:e2e`、`git diff --check`。
+- 结果：新增 `test:e2e`、`test:e2e:ui`、`test:e2e:headed`；E2E 覆盖未登录/普通用户/管理员后台权限，内容草稿、发布、下架、回收站恢复，Markdown 前台渲染，上传权限与合法图片上传，分类移动后删除。
+- 限制：未覆盖完整批量操作、所有后台 UI 表单细节、对象存储上传、跨浏览器矩阵和 CI 数据库初始化；测试依赖可访问的本地或 Docker 服务，默认 `PLAYWRIGHT_BASE_URL=http://localhost:3000`。
 
 ### 已完成：Windows `.next-final` 文件锁问题
 

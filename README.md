@@ -47,6 +47,7 @@ npm run admin:reset
 npm run clean
 npm run lint
 npm run build
+npm run test:e2e
 npm run prisma:migrate
 npm run seed
 ```
@@ -152,6 +153,41 @@ cat backups/fy_site.sql | docker compose exec -T db psql -U fy_user -d fy_site
 ```
 
 建议使用系统计划任务或 cron 每天执行备份脚本。
+
+## Playwright E2E 测试
+
+端到端测试位于 `tests/e2e/`，默认访问 `http://localhost:3000`，可通过 `PLAYWRIGHT_BASE_URL` 覆盖。测试会使用 `E2E_TEST_` 前缀创建临时分类、内容和用户，并在测试结束后通过受控后台 API 清理自己创建的数据。
+
+需要的环境变量：
+
+```env
+E2E_ADMIN_EMAIL=admin@example.com
+E2E_ADMIN_PASSWORD=replace-with-a-strong-admin-password
+E2E_USER_EMAIL=
+E2E_USER_PASSWORD=
+PLAYWRIGHT_BASE_URL=http://localhost:3000
+PLAYWRIGHT_SKIP_WEBSERVER=1
+```
+
+如果未设置 `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD`，测试会读取 `.env` 中的 `ADMIN_EMAIL` / `ADMIN_PASSWORD`。不要使用 `admin/admin`。
+
+首次运行如缺少浏览器，请安装：
+
+```bash
+npx playwright install chromium
+```
+
+运行：
+
+```bash
+npm run test:e2e
+npm run test:e2e:headed
+npm run test:e2e:ui
+```
+
+当前 E2E 覆盖后台权限、管理员访问、普通用户拒绝访问、内容草稿/发布/下架/回收站、Markdown 前台渲染、上传权限和分类移动后删除。失败截图、trace 和报告输出到 `test-results/`、`playwright-report/`，这些目录已被 `.gitignore` 忽略。
+
+测试不会执行 `prisma migrate reset`，不会清空数据库，不会清理 Docker volume，不会删除非 `E2E_TEST_` 数据。
 
 ## 托管平台部署
 

@@ -20,6 +20,9 @@
     "test:category-delete": "node scripts/category-delete-smoke.js",
     "test:tag-merge": "node scripts/tag-merge-smoke.js",
     "test:upload": "node scripts/upload-smoke.js",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
     "docker:df": "docker system df",
     "docker:df:detail": "docker system df -v",
     "docker:clean:build-cache": "docker builder prune -f",
@@ -45,6 +48,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.3.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "26.1.0",
