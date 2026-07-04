@@ -67,3 +67,11 @@
 - 默认策略：只自动或半自动清理构建缓存、dangling images、已停止且确认不再需要的临时容器。
 - 禁止事项：不得未经确认执行 `docker volume prune`；不得未经确认删除 PostgreSQL、Caddy 或用户上传文件 volume。
 - 修改前检查：清理 volume 前必须确认 volume 名称、用途、是否已有备份，并取得用户明确同意。
+
+## 听歌模块第一版只支持合法音频 URL
+
+- 原因：听歌模块只是学习、阅读、编程时的背景音乐功能，不应扩展成大型音乐平台，也不应引入音频上传持久化、转码或版权风险。
+- 影响范围：`MusicTrack.audioUrl`、`/music`、首页音乐卡片、全站迷你播放器、`/admin/music`。
+- 第一版策略：管理员手动录入自己有权使用、公开授权或允许外链播放的音频 URL；封面图可复用现有图片上传；不支持音频文件上传。
+- 安全约束：音频 URL 必须是公开 `http/https`，拒绝 `javascript:`、`data:`、localhost 和私网地址；前台只展示 `isPublished = true` 且 `deletedAt = null` 的音乐。
+- 合规约束：后台和 README 明确提示不要上传或引用未经授权的商业音乐，不提供盗版下载功能，不默认自动播放。

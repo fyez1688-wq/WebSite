@@ -8,6 +8,7 @@ import { useState } from "react";
 const nav = [
   { href: "/", label: "首页" },
   { href: "/contents", label: "内容" },
+  { href: "/music", label: "听歌" },
   { href: "/search", label: "搜索" },
   { href: "/favorites", label: "我的收藏" }
 ];

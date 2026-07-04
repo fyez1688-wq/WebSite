@@ -4,6 +4,8 @@ import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
 import { useEffect } from "react";
 import { FavoriteSync } from "@/components/favorite-sync";
+import { MiniPlayer } from "@/components/music/mini-player";
+import { MusicPlayerProvider } from "@/components/music/music-player";
 
 export function Providers({
   session,
@@ -19,8 +21,11 @@ export function Providers({
 
   return (
     <SessionProvider session={session}>
-      <FavoriteSync />
-      {children}
+      <MusicPlayerProvider>
+        <FavoriteSync />
+        {children}
+        <MiniPlayer />
+      </MusicPlayerProvider>
     </SessionProvider>
   );
 }

@@ -45,6 +45,80 @@ export const announcementSchema = z.object({
   isActive: z.boolean().default(true)
 });
 
+const blockedHostnames = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
+
+function isPublicHttpUrl(value: string) {
+  try {
+    const url = new URL(value);
+    if (!["http:", "https:"].includes(url.protocol)) return false;
+    const hostname = url.hostname.toLowerCase();
+    if (blockedHostnames.has(hostname)) return false;
+    if (
+      /^10\./.test(hostname) ||
+      /^127\./.test(hostname) ||
+      /^169\.254\./.test(hostname) ||
+      /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname) ||
+      /^192\.168\./.test(hostname)
+    ) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const optionalPublicUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .optional()
+  .nullable()
+  .refine((value) => !value || isPublicHttpUrl(value), "URL 必须是可公开访问的 http/https 地址");
+
+export const musicTrackSchema = z.object({
+  title: z.string().trim().min(1, "歌曲标题不能为空").max(100, "歌曲标题不能超过100个字符"),
+  artist: z.string().trim().max(100).optional().nullable(),
+  album: z.string().trim().max(100).optional().nullable(),
+  description: z.string().trim().max(1000).optional().nullable(),
+  coverImage: z.string().trim().max(500).optional().nullable(),
+  audioUrl: z
+    .string()
+    .trim()
+    .min(1, "音频 URL 不能为空")
+    .max(500)
+    .refine(isPublicHttpUrl, "音频 URL 必须是可公开访问的 http/https 地址"),
+  sourceUrl: optionalPublicUrl,
+  license: z.string().trim().max(300).optional().nullable(),
+  category: z.string().trim().max(60).optional().nullable(),
+  duration: z.coerce.number().int().min(0).max(24 * 60 * 60).optional().nullable(),
+  sortOrder: z.coerce.number().int().min(0).max(999999).default(0),
+  isPublished: z.boolean().default(false),
+  isFeatured: z.boolean().default(false)
+});
+
+export const musicTrackUpdateSchema = z.object({
+  title: z.string().trim().min(1, "歌曲标题不能为空").max(100, "歌曲标题不能超过100个字符").optional(),
+  artist: z.string().trim().max(100).optional().nullable(),
+  album: z.string().trim().max(100).optional().nullable(),
+  description: z.string().trim().max(1000).optional().nullable(),
+  coverImage: z.string().trim().max(500).optional().nullable(),
+  audioUrl: z
+    .string()
+    .trim()
+    .min(1, "音频 URL 不能为空")
+    .max(500)
+    .refine(isPublicHttpUrl, "音频 URL 必须是可公开访问的 http/https 地址")
+    .optional(),
+  sourceUrl: optionalPublicUrl,
+  license: z.string().trim().max(300).optional().nullable(),
+  category: z.string().trim().max(60).optional().nullable(),
+  duration: z.coerce.number().int().min(0).max(24 * 60 * 60).optional().nullable(),
+  sortOrder: z.coerce.number().int().min(0).max(999999).optional(),
+  isPublished: z.boolean().optional(),
+  isFeatured: z.boolean().optional()
+});
+
 export const adminUserSchema = z.object({
   nickname: z.string().trim().min(1).max(30).optional(),
   role: z.enum(["USER", "ADMIN"]).optional(),

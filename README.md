@@ -47,10 +47,23 @@ npm run admin:reset
 npm run clean
 npm run lint
 npm run build
+npm run test:music
 npm run test:e2e
 npm run prisma:migrate
 npm run seed
 ```
+
+## 听歌模块
+
+站点包含一个轻量的背景音乐功能，定位为学习、阅读、写代码时使用，不是大型音乐平台。
+
+- 前台入口：首页“听歌放松”模块、`/music` 音乐小角落、全站右下角迷你播放器。
+- 后台入口：`/admin/music`，管理员可新增、编辑、软删除、启用/禁用、设置首页推荐和排序。
+- 第一版只支持填写合法音频 URL；封面图可填写 URL 或复用现有图片上传接口。
+- 音频 URL 必须是公开可访问的 `http/https` 地址，服务端会拒绝危险协议和本机/私网地址。
+- 网站不应托管或引用未经授权的商业音乐；音频链接和文件需要管理员自行确认版权。
+- 不提供盗版下载功能，不默认自动播放，用户必须主动点击播放。
+- 基础验收命令：`npm run test:music`。
 
 ## Windows 本机构建清理
 

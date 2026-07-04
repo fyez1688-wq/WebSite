@@ -110,6 +110,15 @@ P2 总体验收已在 2026-07-04 执行。代码、类型、权限、Markdown、
 
 P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGENTS.md` 读取项目文档并只处理一项独立任务。
 
+### 已完成：听歌模块第一版
+
+- 目标：增加学习、阅读、编程时使用的轻量背景音乐播放器，不做大型音乐平台。
+- 涉及文件：`prisma/schema.prisma`、`prisma/migrations/20260705000000_music_module/`、`services/music.ts`、`app/music/page.tsx`、`app/admin/music/page.tsx`、`app/api/music/*`、`app/api/admin/music/*`、`components/music/*`、`components/admin-music-client.tsx`、`scripts/music-smoke.js`。
+- 验收条件：游客只能看到已发布音乐；未发布和软删除音乐不暴露；普通用户不能访问后台音乐接口；管理员可新增、编辑、软删除；非法音频 URL 被拒绝；首页推荐接口只返回已发布推荐音乐；播放量接口不暴露未发布音乐。
+- 结果：新增首页“听歌放松”、`/music`、全站迷你播放器和 `/admin/music`；新增 `MusicTrack` 模型和正式迁移；后台加入版权提示。
+- 限制：第一版只支持填写合法音频 URL，暂不支持音频上传、转码、歌词、播放列表持久化或音乐收藏。
+- 需要运行：`npx prisma validate`、`npx prisma generate`、`npx prisma migrate deploy`、`npm run lint`、`npx tsc --noEmit`、`npm run test:music`，并按本轮要求复跑既有 smoke/E2E。
+
 ### 标签合并高级完善或验收
 
 - 目标：在已完成的标签合并基础上补充更细的 UI 状态、批量选择或冲突提示验收。

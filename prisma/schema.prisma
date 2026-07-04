@@ -60,6 +60,8 @@ model User {
   createdContents     Content[]            @relation("CreatedContents")
   updatedContents     Content[]            @relation("UpdatedContents")
   deletedContents     Content[]            @relation("DeletedContents")
+  createdMusicTracks  MusicTrack[]         @relation("MusicCreatedBy")
+  updatedMusicTracks  MusicTrack[]         @relation("MusicUpdatedBy")
   passwordResetTokens PasswordResetToken[]
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
@@ -239,6 +241,37 @@ model Announcement {
   endsAt    DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model MusicTrack {
+  id          String   @id @default(cuid())
+  title       String
+  artist      String?
+  album       String?
+  description String?
+  coverImage  String?
+  audioUrl    String
+  sourceUrl   String?
+  license     String?
+  category    String?
+  duration    Int?
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  playCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+  createdById String?
+  updatedById String?
+
+  createdBy User? @relation("MusicCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User? @relation("MusicUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@index([sortOrder])
+  @@index([deletedAt])
 }
 
 model SiteSetting {

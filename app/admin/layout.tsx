@@ -8,6 +8,7 @@ const nav = [
   ["/admin/categories", "分类管理"],
   ["/admin/tags", "标签管理"],
   ["/admin/content/trash", "回收站"],
+  ["/admin/music", "音乐管理"],
   ["/admin/users", "用户管理"],
   ["/admin/banners", "轮播图管理"],
   ["/admin/announcements", "公告管理"],

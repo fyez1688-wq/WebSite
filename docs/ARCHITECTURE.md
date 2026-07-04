@@ -40,6 +40,20 @@
 
 游客收藏保存在 localStorage。登录后 `components/favorite-sync.tsx` 调用 `/api/favorites` 将本地收藏合并到数据库。登录用户收藏通过 `services/favorites.ts` 中的事务写入，`Favorite` 有 `userId + contentId` 唯一约束，防止重复收藏。
 
+## 听歌模块流程
+
+听歌模块定位为学习、阅读、编程时的背景音乐播放器，不作为大型音乐平台使用。
+
+- 数据模型：`MusicTrack` 保存歌曲标题、作者、封面、音频 URL、来源、授权、分类、排序、发布状态、首页推荐、播放量和软删除时间。
+- 前台页面：`/music` 展示已发布且未软删除的音乐，支持搜索歌曲名、作者、专辑和按分类筛选。
+- 首页：`app/page.tsx` 只读取 3 到 6 首 `isPublished = true`、`isFeatured = true`、`deletedAt = null` 的推荐音乐。
+- 全站播放器：`components/music/music-player.tsx` 使用浏览器原生 `Audio`，`components/music/mini-player.tsx` 默认收起，用户主动点击后播放，页面内切换尽量保持播放状态。
+- 后台页面：`/admin/music` 通过管理员 layout 的 `requireAdmin()` 保护，表单提交到 `/api/admin/music`。
+- 后台 API：所有写操作调用 `requireAdminApi()` 和 `assertSameOrigin()`，不信任前端传入身份。
+- 音频来源：第一版只支持填写合法可外链音频 URL；封面可复用现有图片上传接口；暂不支持音频文件上传。
+- URL 安全：`musicTrackSchema` 限制音频 URL 为公开 `http/https`，拒绝危险协议、本机和私网地址。
+- 播放量：`POST /api/music/[id]/play` 只对已发布、未删除音乐计数，并做 30 秒基础防刷。
+
 ## 图片上传流程
 
 后台上传接口为 `/api/admin/uploads`。接口验证管理员权限和同源请求，调用 `services/storage.ts`：
@@ -104,6 +118,13 @@ volume 是持久化数据，不等于临时缓存。Docker 空间维护应先用
 - `components/admin-content-list.tsx`：后台内容表格、筛选、批量操作。
 - `components/admin-content-form.tsx`：创建/编辑内容表单。
 - `app/api/admin/contents/*`：后台内容管理 API。
+- `app/music/page.tsx`：公开音乐列表页。
+- `app/admin/music/page.tsx`：后台音乐管理页。
+- `components/music/*`：音乐卡片、共享播放器和迷你播放器。
+- `components/admin-music-client.tsx`：后台音乐管理客户端组件。
+- `services/music.ts`：音乐查询、创建、更新、软删除和播放量计数服务。
+- `app/api/music/*`：公开音乐 API。
+- `app/api/admin/music/*`：后台音乐管理 API。
 - `app/api/admin/tags/[id]/merge/route.ts`：标签合并 API。
 - `components/markdown-preview.tsx`：统一 Markdown 渲染和代码复制组件。
 - `prisma/schema.prisma`：数据库模型。

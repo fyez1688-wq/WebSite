@@ -20,6 +20,7 @@
     "test:category-delete": "node scripts/category-delete-smoke.js",
     "test:tag-merge": "node scripts/tag-merge-smoke.js",
     "test:upload": "node scripts/upload-smoke.js",
+    "test:music": "node scripts/music-smoke.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",

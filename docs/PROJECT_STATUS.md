@@ -1,6 +1,6 @@
 # Project Status
 
-最后更新：2026-07-04
+最后更新：2026-07-05
 
 ## 已完成
 
@@ -34,6 +34,15 @@
 - 标签合并：后台标签管理可将源标签合并到目标标签，服务端事务内迁移 `ContentTag` 关联、跳过重复关系、删除源标签并写入操作日志。
 - P2 运维与质量增强：上传安全增强、Docker 空间安全清理脚本和文档、Windows `.next-final` 构建清理、基础 Playwright E2E 测试均已完成并提交。
 - 生产部署检查清单：`docs/PRODUCTION_CHECKLIST.md` 已整理生产环境变量、管理员账号、Docker volume、Caddy HTTPS、迁移、备份、日志、验收和回滚检查项。
+- 听歌模块第一版：
+  - 定位为学习、阅读、编程时的背景音乐播放器，不作为大型音乐平台。
+  - 新增 `MusicTrack` 数据模型和正式迁移 `20260705000000_music_module`。
+  - 新增首页“听歌放松”模块、`/music` 音乐小角落、全站右下角默认收起迷你播放器。
+  - 新增 `/admin/music` 后台音乐管理，支持新增、编辑、软删除、启用/禁用、首页推荐、排序、封面 URL/图片上传复用、音频 URL 和预览播放。
+  - 新增公开 API `/api/music`、`/api/music/featured`、`/api/music/[id]/play`。
+  - 新增后台 API `/api/admin/music`、`/api/admin/music/[id]`。
+  - 音频第一版只支持合法可外链 URL，不支持音频文件上传；后台和 README 已补版权与授权提示。
+  - 新增 `npm run test:music` / `scripts/music-smoke.js` 覆盖公开读取、发布过滤、后台权限、增改软删、非法 URL、推荐接口和播放量基础防刷。
 
 ## 部分完成
 
@@ -43,6 +52,7 @@
 - SEO：已有 metadata、sitemap、robots、部分页面标题；内容 SEO 字段已入库，但前台详情页尚未完整使用全部 SEO 字段。
 - 文件上传：本地 StorageService 已有统一适配接口；对象存储 R2/S3/OSS/COS 仍未接入。
 - 测试：完成命令验证、部分接口冒烟测试和基础 Playwright E2E 套件。
+- 听歌模块：第一版暂不支持音频文件上传、转码、歌词、播放列表保存和收藏系统接入；音乐喜欢/收藏未强行复用内容收藏系统。
 
 ## 未开始
 
@@ -77,6 +87,7 @@
 - `/contents/[slug]`
 - `/search`
 - `/favorites`
+- `/music`
 - `/login`
 - `/register`
 - `/profile`
@@ -86,6 +97,7 @@
 - `/admin/content/[id]/edit`
 - `/admin/content/[id]/preview`
 - `/admin/content/trash`
+- `/admin/music`
 - `/admin/categories`
 - `/admin/tags`
 - `/admin/users`
@@ -99,6 +111,9 @@
 - `/api/auth/[...nextauth]`
 - `/api/auth/register`
 - `/api/favorites`
+- `/api/music`
+- `/api/music/featured`
+- `/api/music/[id]/play`
 - `/api/profile`
 - `/api/admin/contents`
 - `/api/admin/contents/[id]`
@@ -106,6 +121,8 @@
 - `/api/admin/contents/[id]/restore`
 - `/api/admin/contents/[id]/purge`
 - `/api/admin/uploads`
+- `/api/admin/music`
+- `/api/admin/music/[id]`
 - `/api/admin/categories`
 - `/api/admin/categories/[id]`
 - `/api/admin/tags`
@@ -145,11 +162,13 @@
 - `OperationLog`
 - `PasswordResetToken`
 - `SearchTerm`
+- `MusicTrack`
 
 ## 已应用的数据库迁移
 
 - `20260703000000_init`
 - `20260703010000_content_management`
+- `20260705000000_music_module`
 
 Docker 日志确认 `20260703010000_content_management` 已应用成功。
 
@@ -199,6 +218,13 @@ P2 总体验收（2026-07-04）：
 - 发布后前台详情页返回 200。
 - 下架成功。
 - 软删除、恢复、永久删除成功。
+
+听歌模块验收（2026-07-05）：
+
+- 已通过：`npx prisma validate`、`npx prisma generate`、`docker compose exec -T app npx prisma migrate deploy`、`npm run lint`、`npx tsc --noEmit`、`npm run test:permissions`、`npm run test:markdown`、`npm run test:category-delete`、`npm run test:upload`、`npm run test:e2e`、`npm run test:music`、`git diff --check`。
+- 已执行：`docker compose up -d --build app`，用于让运行中的 Docker app 容器包含本轮新增音乐模块；构建和 Next.js 编译通过。
+- 已按规则在 Docker 构建前后运行 `npm run docker:df`；构建后主要可回收空间仍来自 Docker build cache，未执行任何 Docker 清理命令，也未清理 volume。
+- 宿主机直接执行 `npx prisma migrate deploy` 失败：当前 Docker PostgreSQL 未映射宿主 `localhost:5432`，容器内迁移验收已通过并使用当前 app 镜像中的 3 个迁移。
 
 ## 当前已知错误
 
