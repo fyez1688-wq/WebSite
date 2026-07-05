@@ -233,7 +233,24 @@ P2 总体验收（2026-07-04）：
 - 已通过：`npm run lint`、`npx tsc --noEmit`、`npm run test:music`、`git diff --check`。
 - 额外尝试 `npm run test:e2e`：首次失败于注册接口 429 限流；避开输出目录锁并提权重跑后仍因注册限流失败，非本次 Header/UI 改动路径。
 
+本机 Codex CLI DeepSeek 接入（2026-07-05）：
+
+- 已在本机 `C:\Users\62342\.codex\config.toml` 追加 DeepSeek provider，并通过 `model_catalog_json` 指向 `C:\Users\62342\.codex\deepseek-model-catalog.json`。
+- `codex debug models` 已确认模型目录包含 `deepseek-chat` 和 `deepseek-reasoner`，可在 `/model` 模型列表中选择。
+- 已将本机默认模型固定为 `deepseek-chat`，并显式设置 `model_provider = "deepseek"`；已移除全局 `model_reasoning_effort` 和旧 `gpt-5.5` 可用性提示，避免启动时在 OpenAI 默认模型与 DeepSeek 模型之间自动切换。
+- `deepseek-reasoner` 仅保留在模型目录中供需要推理时手动选择，不作为默认模型。
+- 未写入 DeepSeek API Key；实际使用前需要在本机环境变量中设置 `DEEPSEEK_API_KEY`。
+- 当前 `codex-cli 0.142.5` 已拒绝 `wire_api = "chat"`，DeepSeek provider 按 CLI 要求配置为 `wire_api = "responses"`；如果 DeepSeek 官方接口不支持 `/v1/responses`，实际调用需要额外的 Responses API 兼容代理。
+- 配置前已生成备份：`C:\Users\62342\.codex\config.toml.bak-deepseek-20260705013409`、`C:\Users\62342\.codex\config.toml.bak-deepseek-20260705013531`、`C:\Users\62342\.codex\config.toml.bak-model-default-20260705014843`。
+
 ## 当前已知错误
+
+## 重装前本地备份
+
+- 2026-07-05 已创建项目外备份目录：`D:\fy-site-backup\fy-site-20260705-123524`，未放入 Git 仓库。
+- 已备份 `.env`、`docs/PRODUCTION_CHECKLIST.md`、当前 Git HEAD、PostgreSQL `pg_dump` custom dump、`uploaded-files` 上传目录和 `RESTORE_STEPS.md`。
+- 已新增 `docs/HANDOFF_SNAPSHOT.md`，记录项目交接、备份目录、恢复要点和禁止事项。
+- 未运行 `prisma migrate reset`、未运行 `docker volume prune`、未删除任何 Docker volume。
 
 - Windows 本机如遇 `.next-final` 文件锁，应先执行 `npm run clean`；若仍失败，通常是 Node/Next 进程、终端、编辑器预览、文件管理器或安全软件占用构建目录，需要关闭占用后重试。本机 `npm run build` 默认使用 `.next-local-build`，旧 `.next-final` 锁定不再阻断本机构建。历史受限 shell 中普通权限 `npm run clean` 和 `npm run build` 曾分别出现 `EPERM rename/unlink` 与 `spawn EPERM`；本次 P2 总体验收中普通 shell 执行 `npm run clean` 和 `npm run build` 均已通过。
 - Docker app 构建验证仍可能被外部网络阻塞：Docker Hub metadata 或 OAuth token 请求出现 EOF，重试时也曾遇到 `npm ci` `ECONNRESET`；尚未发现 Dockerfile 或项目代码编译错误。

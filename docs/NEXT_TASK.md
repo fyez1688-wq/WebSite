@@ -127,6 +127,15 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - 已运行：`npm run lint`、`npx tsc --noEmit`、`npm run test:music`、`git diff --check`。
 - 备注：额外尝试 E2E 时被注册接口 429 限流阻断，非本次 UI 改动路径。
 
+### 已完成：本机 Codex CLI DeepSeek 模型目录接入
+
+- 目标：让本机 Codex CLI 的 `/model` 模型列表出现 DeepSeek 模型。
+- 涉及文件：本机 `C:\Users\62342\.codex\config.toml`、`C:\Users\62342\.codex\deepseek-model-catalog.json`。
+- 结果：已追加 DeepSeek provider，并保留原 OpenAI 模型目录；`codex debug models` 已确认包含 `deepseek-chat` 和 `deepseek-reasoner`；当前默认模型已固定为 `deepseek-chat` + `model_provider = "deepseek"`。
+- 稳定性修复：已移除全局 `model_reasoning_effort` 和旧 `gpt-5.5` 可用性提示，避免启动时在 OpenAI 默认模型与 DeepSeek 模型之间自动切换；`deepseek-reasoner` 仅保留为手动推理模型。
+- 限制：未写入 API Key；使用前需设置 `DEEPSEEK_API_KEY`。当前 `codex-cli 0.142.5` 要求自定义 provider 使用 `wire_api = "responses"`，若 DeepSeek 端不支持 `/v1/responses`，需要额外兼容代理。
+- 已运行：`codex debug models`、`codex doctor`。
+
 ### 标签合并高级完善或验收
 
 - 目标：在已完成的标签合并基础上补充更细的 UI 状态、批量选择或冲突提示验收。
@@ -151,11 +160,12 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - 验收条件：CI 能初始化测试数据库、安装 Playwright 浏览器并上传失败报告。
 - 风险：CI 密钥和测试账号必须通过安全变量注入。
 
-### 数据库备份和恢复脚本
+### 已完成：重装前本地备份
 
-- 目标：补充 PostgreSQL 备份、恢复和演练文档。
-- 验收条件：备份文件路径、恢复步骤、校验方式和失败处理清晰；恢复流程在非生产环境验证。
-- 风险：恢复脚本不得误连生产库，不得覆盖未确认的数据。
+- 目标：在重装电脑前创建项目外本地备份目录，保存 `.env`、关键文档、Git HEAD、PostgreSQL 数据库备份、上传文件和恢复步骤。
+- 结果：备份目录为 `D:\fy-site-backup\fy-site-20260705-123524`；已生成 `database/fy_site.dump`、`uploaded-files/uploads`、`RESTORE_STEPS.md`、`GIT_HEAD.txt` 和 `GIT_STATUS_SHORT.txt`。
+- 备注：已新增 `docs/HANDOFF_SNAPSHOT.md`，用于重装前 GitHub 交接和恢复指引。
+- 安全约束：未运行 `prisma migrate reset`、未运行 `docker volume prune`、未删除任何 Docker volume；备份目录位于项目外，不进入 Git。
 
 ### 网站内容运营功能
 
