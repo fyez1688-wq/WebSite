@@ -21,14 +21,15 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup -S nextjs && adduser -S nextjs -G nextjs
-COPY --from=builder /app/public ./public
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/.next-final/standalone ./
-COPY --from=builder /app/.next-final/static ./.next-final/static
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
-RUN mkdir -p /app/public/uploads && chown -R nextjs:nextjs /app/public/uploads
+COPY --from=builder --chown=nextjs:nextjs /app/public ./public
+COPY --from=deps --chown=nextjs:nextjs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nextjs /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nextjs /app/.next-final/standalone ./
+COPY --from=builder --chown=nextjs:nextjs /app/.next-final/static ./.next-final/static
+COPY --from=builder --chown=nextjs:nextjs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nextjs /app/prisma.config.ts ./prisma.config.ts
+RUN mkdir -p /app/public/uploads \
+  && chown -R nextjs:nextjs /app/public/uploads /app/node_modules/.prisma /app/node_modules/@prisma /app/node_modules/prisma
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.js"]

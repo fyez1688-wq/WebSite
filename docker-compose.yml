@@ -33,7 +33,7 @@ services:
       - uploaded-files:/app/public/uploads
     ports:
       - "3000:3000"
-    command: sh -c "npx prisma migrate deploy && npm run seed && node server.js"
+    command: sh -c "./node_modules/.bin/prisma migrate deploy && npm run seed && node server.js"
 
   caddy:
     image: caddy:2-alpine
