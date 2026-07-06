@@ -2,6 +2,8 @@
 
 最后更新：2026-07-05
 
+完整项目说明文档：`docs/PROJECT_FULL_EXPLANATION.md`
+
 ## 已完成
 
 - 项目基础：Next.js App Router、TypeScript、Tailwind CSS、Prisma 7、PostgreSQL、NextAuth、Zod、Docker Compose、Caddy。

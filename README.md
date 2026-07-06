@@ -2,6 +2,8 @@
 
 资源收藏、学习资料、技术文章、软件下载于一体的 Next.js 网站。
 
+完整项目说明文档：`docs/PROJECT_FULL_EXPLANATION.md`
+
 ## 架构
 
 - Next.js App Router + TypeScript + Tailwind CSS
