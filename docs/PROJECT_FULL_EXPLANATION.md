@@ -1122,11 +1122,14 @@ npm run test:markdown
 uploaded-files:/app/public/uploads
 ```
 
-对象存储限制：
+存储 Provider：
 
-```text
-对象存储 Provider 尚未接入。
-```
+- 默认 `STORAGE_PROVIDER=local`，文件写入 `LOCAL_UPLOAD_DIR`，Docker 使用 `uploaded-files` volume 持久化。
+- `STORAGE_PROVIDER=s3` 或 `r2` 时，通过 AWS SDK v3 写入 Cloudflare R2 / S3 兼容 bucket，公开 URL 由 `S3_PUBLIC_BASE_URL` 生成。
+- 对象存储需要 region、bucket、access key、secret 和公开基址；R2/S3 兼容服务还需要 endpoint，标准 AWS S3 可留空。缺少配置时上传明确失败，不会悄悄写回本地。
+- 真实密钥只能放在 `.env` 或部署平台安全变量，不能提交 Git。
+- local 和对象存储共用图片大小、MIME、真实签名与宽高校验。key 固定由服务端生成，删除接口不能删除任意路径或 bucket 文件。
+- 切换 Provider 不会自动迁移已有图片。对象存储中的新文件不依赖 local volume，但既有 `uploaded-files` 仍需保留和备份。
 
 相关测试：
 
@@ -1484,7 +1487,7 @@ Playwright 浏览器测试。失败可能是功能问题，也可能是浏览器
 
 ### 上线后可以做
 
-- 对象存储 Provider：R2/S3/OSS/COS。
+- 对象存储 Provider 已完成 R2/S3 兼容接入；后续工作是生产凭据配置与既有文件迁移方案，必要时再评估 OSS/COS 专用能力。
 - 网站设置后台编辑保存。
 - 公告 / 轮播图更完整运营功能。
 - sitemap / robots / SEO 深度验收。

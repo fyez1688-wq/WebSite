@@ -20,7 +20,7 @@
   - `/admin/content/trash`
   - `/admin/contents` 旧路径跳转兼容。
 - 内容功能：服务端分页、筛选、排序、批量发布/下架/推荐/置顶/删除、创建、编辑、保存草稿、发布、下架、软删除、恢复、永久删除、管理员预览。
-- 图片上传：`/api/admin/uploads` 支持 JPG/JPEG/PNG/WEBP，本地保存到 `public/uploads/covers`，有大小、MIME、文件签名和宽高校验；管理员可删除受控上传图片，存储服务已有本地适配层。
+- 图片上传：`/api/admin/uploads` 支持 JPG/JPEG/PNG/WEBP，有大小、MIME、文件签名和宽高校验；默认保存到本地 `public/uploads/covers`，也可通过环境变量选择 Cloudflare R2 / S3 兼容对象存储。管理员只能删除受控 URL/key。
 - 服务层：
   - `services/content.ts`
   - `services/storage.ts`
@@ -53,7 +53,7 @@
 - 标签管理：可创建、编辑、删除、颜色字段和重复标签合并；标签颜色 UI 仍较基础。
 - 操作日志：内容、分类、标签、用户等写操作有记录；日志字段已扩展，但历史日志可能字段为空。
 - SEO：已有 metadata、sitemap、robots、部分页面标题；内容 SEO 字段已入库，但前台详情页尚未完整使用全部 SEO 字段。
-- 文件上传：本地 StorageService 已有统一适配接口；对象存储 R2/S3/OSS/COS 仍未接入。
+- 文件上传：local 与 S3/R2 Provider 已接入；尚未自动迁移既有本地图片，也未接入 OSS/COS 专用 SDK（可通过其 S3 兼容接口时复用现有 Provider）。
 - 测试：完成命令验证、部分接口冒烟测试和基础 Playwright E2E 套件。
 - 听歌模块：第一版暂不支持音频文件上传、转码、歌词、播放列表保存和收藏系统接入；音乐喜欢/收藏未强行复用内容收藏系统。
 
@@ -242,6 +242,14 @@ P2 总体验收（2026-07-04）：
 - 已运行 `npm run test:e2e`，Chromium 4/4 用例通过，共耗时 5.8 秒。
 - 通过范围：后台权限边界；内容草稿、发布、下架、回收站和 Markdown 前台渲染；上传权限、合法图片和伪装文件；分类移动后删除及内容分类迁移。
 - 本次仅记录恢复后验证结果，未修改业务代码、数据库结构或 Docker volume。
+
+对象存储 Provider 验收（2026-07-12）：
+
+- 默认 local 上传保持兼容；新增可选 `s3` / `r2` Provider，使用 AWS SDK v3，Cloudflare R2 通过自定义 endpoint 支持。
+- 已通过：`npm run lint`、`npx tsc --noEmit`、`npm run test:upload`、`git diff --check`。上传测试同时覆盖既有 HTTP 安全流程、临时目录 local Provider、缺失 R2 配置和 fake S3 client 上传/删除。
+- `docker compose exec -T app npx prisma migrate deploy` 通过：3 个迁移均已应用，无待执行迁移；本任务没有数据库 schema 变更。
+- `docker compose up -d --build app` 连续两次在容器 `npm ci` 下载 `zwitch` 时因 npm registry `ECONNRESET` 失败，未进入项目编译阶段；运行中的旧 app 容器和所有 volume 保持不变。
+- 构建前后已运行 `docker system df`；5 个 local volume 均 active，未执行任何 Docker 清理，build cache 约 5.67GB，其中约 4.236GB 可回收。
 
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 

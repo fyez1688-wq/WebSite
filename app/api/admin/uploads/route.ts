@@ -32,10 +32,12 @@ export async function DELETE(request: Request) {
   if (response) return response;
   const body = await request.json().catch(() => null);
   const url = typeof body?.url === "string" ? body.url.trim() : "";
-  if (!url) return fail("VALIDATION_ERROR", "缺少图片地址");
+  const key = typeof body?.key === "string" ? body.key.trim() : "";
+  const provider = typeof body?.provider === "string" ? body.provider.trim() : "";
+  if (!url && !key) return fail("VALIDATION_ERROR", "缺少图片地址或对象 key");
   try {
-    await deleteImage(url);
-    return ok({ url }, "图片已删除");
+    await deleteImage({ url, key, provider });
+    return ok({ url: url || undefined, key: key || undefined, provider: provider || undefined }, "图片已删除");
   } catch (error) {
     return fail(
       "DELETE_FAILED",

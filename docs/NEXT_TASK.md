@@ -147,11 +147,17 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - 收尾修复：`eslint.config.mjs` 已显式忽略 Next.js 构建目录、Playwright 报告、测试结果和依赖目录，避免全量 lint 扫描生成文件；`.gitignore` 已包含对应规则，无需修改。
 - 恢复后复验：2026-07-12 恢复独立的 `docker/Caddyfile` 域名改动后运行 `npm run test:e2e`，Chromium 4/4 用例通过；标签合并任务保持完成状态，本次未进入后续功能开发。
 
-### 对象存储 Provider 接入
+### 已完成：对象存储 Provider 接入
 
 - 目标：接入 Cloudflare R2 / S3 兼容存储 Provider，复用现有 `StorageService` 适配层。
 - 验收条件：本地上传仍可用；R2/S3 配置缺失时不会影响本地开发；上传、删除和 URL 生成均有测试。
 - 风险：不能提交访问密钥、Token 或真实 bucket 配置；迁移已有上传文件前必须有备份方案。
+- 结果：保留默认 local Provider，新增 AWS SDK v3 驱动的 S3/R2 Provider；上传 API 返回 `url`、`key`、`provider`，删除兼容旧 URL 并支持受控 key。
+- 配置：通过 `STORAGE_PROVIDER`、`LOCAL_UPLOAD_*` 和 `S3_*` 环境变量选择 Provider；S3/R2 缺少必要配置时明确报错，不静默回退。
+- 测试：`npm run test:upload` 保留原 HTTP 安全验收，并新增临时目录 local 测试、缺失配置测试和注入 fake client 的 S3/R2 上传删除测试，不需要真实云凭据。
+- 限制：不自动迁移既有 `uploaded-files` 内容；正式切换前需要备份、公开域名和旧 URL 兼容方案。
+- 已运行：`npm run lint`、`npx tsc --noEmit`、`npm run test:upload`、`git diff --check`、`docker compose exec -T app npx prisma migrate deploy`、构建前后 `docker system df`。
+- Docker 验证：app 构建两次被 npm registry 下载 `zwitch` 的 `ECONNRESET` 阻断，未进入项目编译；现有容器和 volume 未受影响，待网络恢复后重试相同构建。
 
 ### 更完整的 Playwright 覆盖
 

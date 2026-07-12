@@ -62,9 +62,11 @@
 - 限制大小，默认 `MAX_UPLOAD_MB=5`。
 - 检查 MIME 和文件签名。
 - 使用随机 UUID 文件名。
-- 保存到 `public/uploads/covers`，返回 `/uploads/covers/...` URL。
+- 在进入 Provider 前解析图片宽高，避免对象存储绕过安全校验。
 
-对象存储尚未接入，但页面只依赖统一上传接口。
+`STORAGE_PROVIDER=local` 默认选择 `LocalStorageProvider`，保存到 `LOCAL_UPLOAD_DIR/covers`，返回 `LOCAL_UPLOAD_PUBLIC_BASE_URL/covers/...`。`STORAGE_PROVIDER=s3` 或 `r2` 选择 `S3CompatibleStorageProvider`，通过 AWS SDK v3 写入 S3 兼容 bucket，并用 `S3_PUBLIC_BASE_URL` 生成公开 URL。
+
+Provider 统一返回 `url`、`key`、`provider`。对象 key 固定为服务端生成的 `covers/<UUID>.(jpg|png|webp)`；删除时再次验证 key 或从受控公开 URL 解析 key，不能删除任意本地路径或 bucket 对象。S3/R2 配置缺失时 Provider 构造会给出缺失字段错误，不影响默认 local 启动。
 
 ## Markdown 存储与渲染
 
@@ -91,7 +93,7 @@ npx prisma migrate deploy && npm run seed && node server.js
 `docker-compose.yml` 包含：
 
 - `db`：PostgreSQL 18，volume 挂载到容器 `/var/lib/postgresql`，保存数据库数据。
-- `app`：Next.js standalone 镜像，依赖 db healthy；上传文件 volume 挂载到 `/app/public/uploads`，保存用户上传文件。
+- `app`：Next.js standalone 镜像，依赖 db healthy；local 模式的上传文件 volume 挂载到 `/app/public/uploads`。S3/R2 模式的新文件保存在外部 bucket，volume 只保留既有本地文件。
 - `caddy`：反向代理，绑定 80/443，读取 `docker/Caddyfile`；Caddy data/config volume 保存证书、账户和运行配置。
 
 本地访问主要使用 `http://localhost:3000`。正式域名使用 Caddy 代理到 app。

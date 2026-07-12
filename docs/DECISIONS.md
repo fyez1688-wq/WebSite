@@ -75,3 +75,11 @@
 - 第一版策略：管理员手动录入自己有权使用、公开授权或允许外链播放的音频 URL；封面图可复用现有图片上传；不支持音频文件上传。
 - 安全约束：音频 URL 必须是公开 `http/https`，拒绝 `javascript:`、`data:`、localhost 和私网地址；前台只展示 `isPublished = true` 且 `deletedAt = null` 的音乐。
 - 合规约束：后台和 README 明确提示不要上传或引用未经授权的商业音乐，不提供盗版下载功能，不默认自动播放。
+
+## 图片存储默认 local，可选 S3/R2 Provider
+
+- 原因：保留当前本地开发和 Docker volume 行为，同时允许生产环境使用 Cloudflare R2 或 S3 兼容对象存储扩展容量和独立持久化。
+- Provider 选择：`STORAGE_PROVIDER=local` 为默认值；`s3` 和 `r2` 共用 AWS SDK v3 与 `S3_*` 配置，避免维护两套兼容协议代码。
+- 安全边界：文件在 Provider 保存前统一完成大小、MIME、签名和宽高校验；key 由服务端 UUID 生成，删除只接受 `covers/<UUID>.(jpg|png|webp)`。
+- 配置策略：真实 access key、secret、bucket 私密信息只通过未提交的 `.env` 或部署安全变量注入；配置缺失时返回清晰错误，禁止静默回退到 local，避免文件落错位置。
+- 数据策略：切换 Provider 不自动迁移既有本地文件；迁移前必须备份 `uploaded-files` 并规划旧 URL，不能因启用对象存储删除 volume。

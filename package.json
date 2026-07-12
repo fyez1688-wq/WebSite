@@ -19,7 +19,7 @@
     "test:markdown": "node scripts/markdown-smoke.js",
     "test:category-delete": "node scripts/category-delete-smoke.js",
     "test:tag-merge": "node scripts/tag-merge-smoke.js",
-    "test:upload": "node scripts/upload-smoke.js",
+    "test:upload": "node scripts/upload-smoke.js && tsx scripts/storage-provider-test.ts",
     "test:music": "node scripts/music-smoke.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
+    "@aws-sdk/client-s3": "^3.1085.0",
     "@prisma/adapter-pg": "7.8.0",
     "@prisma/client": "7.8.0",
     "@types/react-syntax-highlighter": "^15.5.13",

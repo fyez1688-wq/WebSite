@@ -55,6 +55,35 @@ npm run prisma:migrate
 npm run seed
 ```
 
+## 图片存储 Provider
+
+图片上传默认继续使用本地存储，不配置对象存储也能正常开发：
+
+```env
+STORAGE_PROVIDER=local
+LOCAL_UPLOAD_DIR=public/uploads
+LOCAL_UPLOAD_PUBLIC_BASE_URL=/uploads
+```
+
+本地模式将封面保存到 `public/uploads/covers`。Docker 中该目录由 `uploaded-files` volume 持久化。切换到 Cloudflare R2 或其他 S3 兼容存储时配置：
+
+```env
+STORAGE_PROVIDER=r2
+S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+S3_REGION=auto
+S3_BUCKET=replace-with-bucket-name
+S3_ACCESS_KEY_ID=replace-in-private-env
+S3_SECRET_ACCESS_KEY=replace-in-private-env
+S3_PUBLIC_BASE_URL=https://cdn.example.com/uploads
+S3_FORCE_PATH_STYLE=true
+```
+
+也可使用 `STORAGE_PROVIDER=s3`。标准 AWS S3 可以将 `S3_ENDPOINT` 留空，R2 或其他兼容服务必须填写 endpoint。`S3_PUBLIC_BASE_URL` 必须是该 bucket 中文件的公开访问基址；上传接口用它生成 URL。对象存储配置缺失或 URL 非法时，上传会返回明确错误，本地默认模式不受影响。
+
+真实 access key 和 secret 只能放在未提交的 `.env` 或部署平台安全变量中。服务端只生成和删除 `covers/<UUID>.(jpg|png|webp)` key，不能通过接口删除任意 bucket 对象。所有 Provider 在保存前共用 MIME、文件签名、大小和宽高校验。
+
+切换到对象存储后，新文件不写入 `uploaded-files` volume；既有本地文件不会自动迁移，迁移前必须先备份并制定 URL 兼容方案。基础测试使用 fake S3 client，不需要真实 R2 凭据：`npm run test:upload`。
+
 ## 听歌模块
 
 站点包含一个轻量的背景音乐功能，定位为学习、阅读、写代码时使用，不是大型音乐平台。
