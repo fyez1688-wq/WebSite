@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { ContentCard } from "@/components/content-card";
+import { PublicImage } from "@/components/public-image";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +36,7 @@ export default async function HomePage() {
   return (
     <main>
       <section className="hero-stage">
-        <Image
+        <PublicImage
           src={hero?.imageUrl || "/images/hero.svg"}
           alt={hero?.title || "FY的小站"}
           fill

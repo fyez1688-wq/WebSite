@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Copy, Eye, FilePlus2, Pencil, Pin, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { PublicImage } from "@/components/public-image";
 
 type ContentRow = {
   id: string;
@@ -196,7 +196,7 @@ export function AdminContentList({
                   setSelected(next);
                 }} /></td>
                 <td>
-                  <Image src={item.coverImage || "/images/default-cover.svg"} alt="" width={74} height={42} className="aspect-video rounded object-cover" />
+                  <PublicImage src={item.coverImage || "/images/default-cover.svg"} alt="" width={74} height={42} className="aspect-video rounded object-cover" />
                 </td>
                 <td>
                   <div className="font-medium">{item.title}</div>

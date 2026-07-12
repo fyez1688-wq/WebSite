@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Content, Category, ContentTag, Tag } from "@prisma/client";
 import { FavoriteButton } from "@/components/favorite-button";
+import { PublicImage } from "@/components/public-image";
 
 type Item = Content & {
   category: Category | null;
@@ -12,7 +12,7 @@ export function ContentCard({ item }: { item: Item }) {
   return (
     <article className="card overflow-hidden">
       <Link href={`/contents/${item.slug}`} className="block">
-        <Image
+        <PublicImage
           src={item.coverImage || "/images/default-cover.svg"}
           alt={item.title}
           width={800}

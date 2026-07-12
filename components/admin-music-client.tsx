@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Edit3, Eye, EyeOff, Pause, Play, Plus, Star, Trash2, Upload } from "lucide-react";
 import type { FormEvent } from "react";
 import { useRef, useState } from "react";
+import { PublicImage } from "@/components/public-image";
 
 type MusicTrackRow = {
   id: string;
@@ -270,7 +270,7 @@ export function AdminMusicClient({
             {items.map((item) => (
               <tr key={item.id}>
                 <td>
-                  <Image src={item.coverImage || "/images/default-cover.svg"} alt="" width={74} height={42} className="aspect-video rounded object-cover" />
+                  <PublicImage src={item.coverImage || "/images/default-cover.svg"} alt="" width={74} height={42} className="aspect-video rounded object-cover" />
                 </td>
                 <td>
                   <div className="font-medium">{item.title}</div>

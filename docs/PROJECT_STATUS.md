@@ -274,6 +274,12 @@ Cloudflare Tunnel 公网部署（2026-07-13）：
 - 生产 URL 配置已修正：`.env` 中的 `NEXTAUTH_URL` 与 `NEXT_PUBLIC_SITE_URL` 已调整为 `https://pzq1688.com`，并已成功重建 app 容器。容器内两项配置均匹配正式域名，公网首页继续返回 200，未登录 `/admin` 继续正常跳转登录页；未修改数据库或 Docker volume。
 - URL 修正后复验：重建后的 app 上 `npm run test:upload` 通过，R2 上传和删除 API 仍正常。容器日志发现 Next.js 图片优化器将 R2 公共域名解析为 `198.18.x.x` 并按私网地址拦截；该问题可能影响 R2 图片通过 `next/image` 的页面显示，需单独处理，不能与上传/删除 API 验收混为一谈。
 
+R2 图片展示修复（2026-07-13）：
+
+- 新增 `components/public-image.tsx`，远程 `http/https` 上传图片以 `unoptimized` 直接由浏览器加载，避免 Next.js 图片优化器将 R2 公共域名解析到 `198.18.x.x` 后按私网地址拦截；本地 `/uploads` 与站内静态图片继续使用原有优化路径。
+- 已覆盖首页 Banner、前台内容卡片、音乐卡片、后台内容列表与编辑预览、后台音乐列表。浏览器复验首页 4 张 R2 图片均直接加载，未经过 `/_next/image`；新 app 日志未再出现 R2 图片优化器拦截。
+- 已通过：`npm run lint`、`npx tsc --noEmit`、`npm run test:upload`、`git diff --check`。app 重建后容器时间已对齐，R2 上传/删除测试再次通过；本任务未修改数据库结构或 Docker volume。
+
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 
 - 已在本机 `C:\Users\62342\.codex\config.toml` 追加 DeepSeek provider，并通过 `model_catalog_json` 指向 `C:\Users\62342\.codex\deepseek-model-catalog.json`。

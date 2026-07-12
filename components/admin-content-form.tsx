@@ -1,11 +1,11 @@
 "use client";
 
 import type { Category, Content, ContentResourceDetail, ContentTag, Tag } from "@prisma/client";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Bold, Code, Eraser, Eye, Heading, ImagePlus, Italic, LinkIcon, List, ListOrdered, Maximize2, Minimize2, Minus, PanelRightOpen, Quote, Save, Strikethrough } from "lucide-react";
 import { MarkdownPreview } from "@/components/markdown-preview";
+import { PublicImage } from "@/components/public-image";
 
 type ContentWithRelations = Content & {
   tags: (ContentTag & { tag: Tag })[];
@@ -332,7 +332,7 @@ export function AdminContentForm({
 
           <section className="admin-panel grid gap-3">
             <h3 className="font-semibold">封面图片</h3>
-            {coverImage && <Image src={coverImage} alt="" width={640} height={360} className="aspect-video w-full rounded object-cover" />}
+            {coverImage && <PublicImage src={coverImage} alt="" width={640} height={360} className="aspect-video w-full rounded object-cover" />}
             <input className="input" value={coverImage} onChange={(e) => { setCoverImage(e.target.value); markDirty(); }} placeholder="封面地址" />
             <label className="btn cursor-pointer">
               <ImagePlus className="size-4" />

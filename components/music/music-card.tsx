@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { Pause, Play } from "lucide-react";
 import type { MusicTrackItem } from "@/components/music/music-types";
 import { useMusicPlayer } from "@/components/music/music-player";
+import { PublicImage } from "@/components/public-image";
 
 export function MusicCard({
   track,
@@ -24,7 +24,7 @@ export function MusicCard({
 
   return (
     <article className={`card overflow-hidden ${compact ? "grid grid-cols-[88px_1fr] sm:block" : ""}`}>
-      <Image
+      <PublicImage
         src={track.coverImage || "/images/default-cover.svg"}
         alt={track.title}
         width={640}
