@@ -165,6 +165,7 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - Cloudflare Tunnel 公网部署（2026-07-13）：`fy-site-tunnel` Connector 为 Healthy，Service 为 `HTTP localhost:3000`；R2 真实联调已完成。`pzq1688.com` 外部 HTTPS 返回 200；`test.pzq1688.com` 当前主机 TLS 握手失败，待 Cloudflare DNS/证书状态稳定后复核，不能作为已验收公网入口。
 - 上线后 URL 配置已完成：生产 `.env` 中 `NEXTAUTH_URL` 与 `NEXT_PUBLIC_SITE_URL` 已对齐为 `https://pzq1688.com`，app 已重新构建并确认容器内生效；公网首页返回 200，`/admin` 未登录跳转正常。其余安全检查结果保持正常：Docker 服务健康、R2 有效、robots/sitemap 可访问、数据库备份/恢复脚本存在、Playwright Chromium 已安装。
 - R2 图片展示已修复：远程上传图片通过 `PublicImage` 使用 `unoptimized` 直连，避免 Next.js 优化器将 R2 域名解析为 `198.18.x.x` 后拒绝；首页 R2 图片浏览器复验直接加载，上传/删除测试继续通过。本地 `/uploads` 和站内静态图片仍使用优化。后续仅需在浏览器使用管理员账号完成一次登录，确认登录回调返回正式域名并可访问后台。
+- 最终上线后持续维护：定期运行 Playwright E2E；为数据库、上传文件和 R2 对象建立自动备份/生命周期策略并演练恢复；补充监控与健康检查；定期查看生产日志和 Cloudflare Tunnel `fy-site-tunnel` 状态；定期使用管理员账号复核真实登录回调。日常改动遵循 `git pull` → lint/TypeScript/相关 smoke test → commit → `git push origin main`。
 
 ### 更完整的 Playwright 覆盖
 

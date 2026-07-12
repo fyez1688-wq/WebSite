@@ -280,6 +280,13 @@ R2 图片展示修复（2026-07-13）：
 - 已覆盖首页 Banner、前台内容卡片、音乐卡片、后台内容列表与编辑预览、后台音乐列表。浏览器复验首页 4 张 R2 图片均直接加载，未经过 `/_next/image`；新 app 日志未再出现 R2 图片优化器拦截。
 - 已通过：`npm run lint`、`npx tsc --noEmit`、`npm run test:upload`、`git diff --check`。app 重建后容器时间已对齐，R2 上传/删除测试再次通过；本任务未修改数据库结构或 Docker volume。
 
+最终生产上线状态（2026-07-13）：
+
+- 正式公网域名 `https://pzq1688.com` 已可访问；首页和 `/music` 返回 200，`/admin` 对未登录用户返回 307 并跳转登录页。Cloudflare Tunnel 用于公网访问，`fy-site-tunnel` Connector 状态为 Healthy，Service 指向 `HTTP localhost:3000`。
+- 生产环境使用 `NEXTAUTH_URL` 与 `NEXT_PUBLIC_SITE_URL` 指向正式域名，默认上传策略为 `STORAGE_PROVIDER=r2`；本地开发仍可改用 `STORAGE_PROVIDER=local`。R2 上传、删除与远程图片直连展示均已验收。
+- 推荐维护流程：开发前 `git pull`；修改后运行 `npm run lint`、`npx tsc --noEmit` 和相关 smoke test；确认无敏感文件后提交并执行 `git push origin main`。
+- 持续运维建议：定期运行 Playwright E2E、配置自动备份并演练恢复、补充监控/健康检查和生产日志查看、监控 Cloudflare Tunnel 状态、为 R2 制定对象备份或生命周期策略，并定期复核管理员真实登录回调。
+
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 
 - 已在本机 `C:\Users\62342\.codex\config.toml` 追加 DeepSeek provider，并通过 `model_catalog_json` 指向 `C:\Users\62342\.codex\deepseek-model-catalog.json`。

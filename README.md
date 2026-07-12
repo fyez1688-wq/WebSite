@@ -273,3 +273,23 @@ npm run seed
 - 密码只保存 bcrypt 哈希。
 - 收藏接口从安全会话读取用户 ID，不信任客户端传入用户 ID。
 - 修改、删除、清空等危险操作在界面做二次确认。
+
+## 当前生产访问状态
+
+- 正式公网入口：`https://pzq1688.com`，通过 Cloudflare Tunnel `fy-site-tunnel` 访问本机 `HTTP localhost:3000` 服务。
+- 生产环境的 `NEXTAUTH_URL` 与 `NEXT_PUBLIC_SITE_URL` 使用 `https://pzq1688.com`。
+- 生产图片上传使用 `STORAGE_PROVIDER=r2` 和 Cloudflare R2；本地开发可使用 `STORAGE_PROVIDER=local`。
+- R2 公共图片通过 `PublicImage` 直连，不经过 Next 图片优化器；本地 `/uploads` 和站内静态图片仍可使用优化。
+
+推荐维护流程：
+
+```bash
+git pull
+npm run lint
+npx tsc --noEmit
+# 运行与改动相关的 smoke test，例如 npm run test:upload
+git commit -m "说明"
+git push origin main
+```
+
+持续运维应包含 Playwright E2E、自动备份与恢复演练、生产日志和健康检查、Cloudflare Tunnel 状态监控、R2 对象备份或生命周期策略，以及管理员真实登录回调复核。

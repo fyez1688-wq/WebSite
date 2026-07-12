@@ -1721,3 +1721,11 @@ git clean -fd
 ```
 
 这条链路会带你经过页面、API、权限、服务层、数据库、Markdown 渲染和测试，是理解“全栈项目”的最好入口。
+
+## 24. 当前最终生产状态
+
+截至 2026-07-13，正式公网入口为 `https://pzq1688.com`。Cloudflare Tunnel `fy-site-tunnel` 的 Connector 为 Healthy，并将公网请求转发到本机 `HTTP localhost:3000` 服务。首页和音乐页已验证可访问，未登录访问后台会跳转登录页。
+
+生产环境的 `NEXTAUTH_URL` 与 `NEXT_PUBLIC_SITE_URL` 均使用正式域名。图片上传默认使用 `STORAGE_PROVIDER=r2` 写入 Cloudflare R2；本地开发仍可通过 `STORAGE_PROVIDER=local` 保持原有目录和 volume 行为。R2 公共图片不经过 Next.js 图片优化器，而是由 `PublicImage` 以 `unoptimized` 方式直连，避免 Docker 网络中 R2 域名解析为 `198.18.x.x` 时被优化器按私网地址拦截。
+
+日常维护应先同步代码，完成 lint、TypeScript 和相关 smoke test，再提交和推送。上线后还应持续做 E2E、备份恢复演练、日志与健康检查、Tunnel 状态检查、R2 生命周期/备份以及管理员真实登录回调复核。
