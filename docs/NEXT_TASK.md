@@ -163,6 +163,7 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - R2 真实联调（2026-07-13）：Docker 网络恢复后 app 已重新构建。容器内 R2 配置和 AWS SDK 均已确认；管理员真实上传返回 `provider: r2` 和 R2 公共 URL，URL 删除前返回 200，删除 API 成功后返回 404。未暴露或提交任何密钥。
 - 上传冒烟测试已兼容 Provider 语义：local Provider 继续要求重复删除返回受控失败；S3/R2 接受 `DeleteObject` 的幂等成功响应。默认开发仍使用 local，生产可通过安全注入 `S3_*` 变量切换 R2/S3。
 - Cloudflare Tunnel 公网部署（2026-07-13）：`fy-site-tunnel` Connector 为 Healthy，Service 为 `HTTP localhost:3000`；R2 真实联调已完成。`pzq1688.com` 外部 HTTPS 返回 200；`test.pzq1688.com` 当前主机 TLS 握手失败，待 Cloudflare DNS/证书状态稳定后复核，不能作为已验收公网入口。
+- 上线后配置待办：将生产 `.env` 中 `NEXTAUTH_URL` 与 `NEXT_PUBLIC_SITE_URL` 对齐为 `https://pzq1688.com`，重新创建 app 容器后验证登录回调、绝对链接和管理员登录；当前运行中变量不匹配正式域名。本轮安全检查其余结果正常：Docker 服务健康、R2 有效、robots/sitemap 可访问、数据库备份/恢复脚本存在、Playwright Chromium 已安装。
 
 ### 更完整的 Playwright 覆盖
 

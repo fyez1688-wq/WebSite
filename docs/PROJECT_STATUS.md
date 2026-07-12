@@ -265,6 +265,14 @@ Cloudflare Tunnel 公网部署（2026-07-13）：
 - `https://test.pzq1688.com` 在当前 Windows 主机探测时未能完成 TLS 握手，即使忽略证书校验也失败；当前不记录为已验证可访问，需在 Cloudflare DNS/证书状态稳定后复核。
 - 本次部署记录的 Git 基线为 `33f9a65 fix: align upload smoke test with r2 delete semantics`；未修改业务代码、数据库结构或 Docker volume。
 
+上线后安全与稳定性检查（2026-07-13）：
+
+- Docker 服务状态正常：`website-app-1` 与 `website-caddy-1` 运行中，`website-db-1` 为 healthy。容器使用 production 模式，数据库、NextAuth、管理员、R2/S3 相关必需变量均已注入（仅作 set/missing 脱敏检查）；管理员凭据不是 `admin/admin`，有效 `STORAGE_PROVIDER` 为 `r2`。
+- 公网探测通过：`https://pzq1688.com` 和 `/music` 返回 200；`/admin` 返回 307 跳转 `/login`，符合未登录保护预期；`/robots.txt` 返回 200，`/sitemap.xml` 返回 200。
+- 已通过：`npm run lint`、`npx tsc --noEmit`、`npm run test:permissions`、`npm run test:upload`、`npm run test:music`、`git diff --check`。Playwright Chromium 已安装，本轮仅检查浏览器可用性，未执行 E2E 套件。
+- 备份脚本存在：`scripts/backup-db.ps1` 和 `scripts/restore-db.ps1`；本轮未执行备份或恢复，未清理任何 Docker volume。
+- 待处理配置：运行中容器的 `NEXTAUTH_URL` 与 `NEXT_PUBLIC_SITE_URL` 均已设置，但不匹配 `https://pzq1688.com`。应在后续维护窗口将两项设置为正式域名，重建 app 容器后验证登录回调和绝对 URL；本轮未修改 `.env` 或容器配置。
+
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 
 - 已在本机 `C:\Users\62342\.codex\config.toml` 追加 DeepSeek provider，并通过 `model_catalog_json` 指向 `C:\Users\62342\.codex\deepseek-model-catalog.json`。
