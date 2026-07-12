@@ -158,6 +158,8 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - 限制：不自动迁移既有 `uploaded-files` 内容；正式切换前需要备份、公开域名和旧 URL 兼容方案。
 - 已运行：`npm run lint`、`npx tsc --noEmit`、`npm run test:upload`、`git diff --check`、`docker compose exec -T app npx prisma migrate deploy`、构建前后 `docker system df`。
 - Docker 验证：app 构建两次被 npm registry 下载 `zwitch` 的 `ECONNRESET` 阻断，未进入项目编译；现有容器和 volume 未受影响，待网络恢复后重试相同构建。
+- 构建网络收尾：Dockerfile 已增加可配置 `NPM_CONFIG_REGISTRY`、npm fetch 重试/超时参数和 BuildKit npm 下载缓存，Compose 默认使用官方源，也允许通过未提交的 `.env` 临时切换镜像源；不改变应用运行时逻辑。
+- 验证结果：临时切换 `npmmirror` 后 build arg 已生效，但 Docker 内同一 `zwitch` 下载仍发生 `ECONNRESET`；确认剩余阻塞位于 Docker 网络/代理层。旧容器继续运行，未清理 volume，网络修复后可直接重试构建。
 
 ### 更完整的 Playwright 覆盖
 

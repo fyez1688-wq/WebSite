@@ -138,6 +138,14 @@ docker compose up -d --build
 
 Caddy 会自动申请 HTTPS 证书。数据库数据保存在 Docker volume `postgres-data`。
 
+如果 Docker 构建阶段访问 npm 官方源不稳定，可临时在未提交的 `.env` 中设置镜像源：
+
+```env
+NPM_CONFIG_REGISTRY=https://registry.npmmirror.com
+```
+
+不设置时默认使用 `https://registry.npmjs.org/`。Dockerfile 会为 `npm ci` 配置 5 次重试、20 至 120 秒退避和 120 秒单次下载超时，并使用 BuildKit cache mount 保留已下载的 npm 包；镜像源通过 Compose build arg 传入，不会写死为唯一选择。
+
 ## Docker 空间维护
 
 大量构建、测试或部署后，先查看 Docker 空间占用：

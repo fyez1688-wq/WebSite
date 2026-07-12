@@ -1,7 +1,14 @@
 FROM node:24-alpine AS deps
 WORKDIR /app
+ARG NPM_CONFIG_REGISTRY=https://registry.npmjs.org/
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+  npm config set registry "$NPM_CONFIG_REGISTRY" \
+  && npm config set fetch-retries 5 \
+  && npm config set fetch-retry-mintimeout 20000 \
+  && npm config set fetch-retry-maxtimeout 120000 \
+  && npm config set fetch-timeout 120000 \
+  && npm ci
 
 FROM node:24-alpine AS builder
 WORKDIR /app

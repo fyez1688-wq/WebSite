@@ -272,6 +272,8 @@ P2 总体验收（2026-07-04）：
 
 - Windows 本机如遇 `.next-final` 文件锁，应先执行 `npm run clean`；若仍失败，通常是 Node/Next 进程、终端、编辑器预览、文件管理器或安全软件占用构建目录，需要关闭占用后重试。本机 `npm run build` 默认使用 `.next-local-build`，旧 `.next-final` 锁定不再阻断本机构建。历史受限 shell 中普通权限 `npm run clean` 和 `npm run build` 曾分别出现 `EPERM rename/unlink` 与 `spawn EPERM`；本次 P2 总体验收中普通 shell 执行 `npm run clean` 和 `npm run build` 均已通过。
 - Docker app 构建验证仍可能被外部网络阻塞：Docker Hub metadata 或 OAuth token 请求出现 EOF，重试时也曾遇到 `npm ci` `ECONNRESET`；尚未发现 Dockerfile 或项目代码编译错误。
+- Docker npm 网络可靠性：Dockerfile 支持通过 `NPM_CONFIG_REGISTRY` build arg 选择 registry，默认仍为 npm 官方源，并为 `npm ci` 配置重试、退避、下载超时和 BuildKit npm 下载缓存；Compose 可从未提交的 `.env` 临时传入镜像源。
+- 2026-07-13 验证：Compose 语法、lint、TypeScript 和 diff 检查通过；临时传入 `https://registry.npmmirror.com` 后构建日志确认 registry 切换生效，但 Docker 内下载 `zwitch` 仍在 TLS 建连前 `ECONNRESET`。旧 app 容器和所有 volume 保持不变，需继续排查 Docker Desktop 网络/代理，而不是修改业务代码。
 - Windows 本机 `npm run admin:reset` 因 `tsx`/esbuild `spawn EPERM` 失败；Docker 容器内执行成功。
 - 正式上线前仍需人工确认 `pzq1688.com` DNS 指向当前服务器、80/443 可访问、生产 `.env` 使用强随机密钥、数据库和上传文件已备份，并完成生产或等价环境部署验收。
 
