@@ -1,6 +1,6 @@
 # Project Status
 
-最后更新：2026-07-12
+最后更新：2026-07-13
 
 完整项目说明文档：`docs/PROJECT_FULL_EXPLANATION.md`
 
@@ -250,6 +250,13 @@ P2 总体验收（2026-07-04）：
 - `docker compose exec -T app npx prisma migrate deploy` 通过：3 个迁移均已应用，无待执行迁移；本任务没有数据库 schema 变更。
 - `docker compose up -d --build app` 连续两次在容器 `npm ci` 下载 `zwitch` 时因 npm registry `ECONNRESET` 失败，未进入项目编译阶段；运行中的旧 app 容器和所有 volume 保持不变。
 - 构建前后已运行 `docker system df`；5 个 local volume 均 active，未执行任何 Docker 清理，build cache 约 5.67GB，其中约 4.236GB 可回收。
+
+Cloudflare R2 真实联调（2026-07-13）：
+
+- Docker app 已重新构建并启动；容器内 `STORAGE_PROVIDER`、全部 `S3_*` 配置均已注入（仅作 set/missing 脱敏检查），`@aws-sdk/client-s3` 已安装。首页和 `/music` 返回 200，未登录访问 `/admin` 正常跳转登录页。
+- 使用管理员真实调用 `/api/admin/uploads` 验证：上传响应 `provider` 为 `r2`，返回 Cloudflare R2 公共 URL；对象删除前该 URL 返回 200，删除 API 返回 200，删除后同一 URL 返回 404，确认对象已从 bucket 删除。
+- `npm run test:upload` 已按上传响应的 `provider` 区分重复删除语义：local Provider 保持不存在文件返回 400 的断言；R2/S3 接受 `DeleteObject` 对不存在对象返回 200 的幂等结果。非法路径、权限、伪装图片、宽高限制、首次上传和删除断言均保持。
+- 当前默认仍建议本地开发使用 `STORAGE_PROVIDER=local`；生产环境可在安全注入 `S3_*` 凭据后切换至 `r2` 或 `s3`，不得提交真实密钥。
 
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 

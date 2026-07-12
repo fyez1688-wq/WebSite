@@ -160,6 +160,8 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - Docker 验证：app 构建两次被 npm registry 下载 `zwitch` 的 `ECONNRESET` 阻断，未进入项目编译；现有容器和 volume 未受影响，待网络恢复后重试相同构建。
 - 构建网络收尾：Dockerfile 已增加可配置 `NPM_CONFIG_REGISTRY`、npm fetch 重试/超时参数和 BuildKit npm 下载缓存，Compose 默认使用官方源，也允许通过未提交的 `.env` 临时切换镜像源；不改变应用运行时逻辑。
 - 验证结果：临时切换 `npmmirror` 后 build arg 已生效，但 Docker 内同一 `zwitch` 下载仍发生 `ECONNRESET`；确认剩余阻塞位于 Docker 网络/代理层。旧容器继续运行，未清理 volume，网络修复后可直接重试构建。
+- R2 真实联调（2026-07-13）：Docker 网络恢复后 app 已重新构建。容器内 R2 配置和 AWS SDK 均已确认；管理员真实上传返回 `provider: r2` 和 R2 公共 URL，URL 删除前返回 200，删除 API 成功后返回 404。未暴露或提交任何密钥。
+- 上传冒烟测试已兼容 Provider 语义：local Provider 继续要求重复删除返回受控失败；S3/R2 接受 `DeleteObject` 的幂等成功响应。默认开发仍使用 local，生产可通过安全注入 `S3_*` 变量切换 R2/S3。
 
 ### 更完整的 Playwright 覆盖
 

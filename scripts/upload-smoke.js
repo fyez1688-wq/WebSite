@@ -215,9 +215,14 @@ async function main() {
       `管理员上传失败：${uploaded.response.status} ${JSON.stringify(uploaded.body)}`
     );
   const image = uploaded.body?.data;
-  if (!image?.url || image.width !== 1 || image.height !== 1) {
+  if (
+    !image?.url ||
+    !["local", "s3", "r2"].includes(image.provider) ||
+    image.width !== 1 ||
+    image.height !== 1
+  ) {
     throw new Error(
-      `上传响应缺少图片地址或宽高：${JSON.stringify(uploaded.body)}`
+      `上传响应缺少图片地址、Provider 或宽高：${JSON.stringify(uploaded.body)}`
     );
   }
 
@@ -228,12 +233,18 @@ async function main() {
     );
 
   const deletedAgain = await deleteUpload(baseUrl, adminJar, image.url);
-  if (
-    deletedAgain.response.status !== 400 ||
-    deletedAgain.body?.error?.code !== "DELETE_FAILED"
-  ) {
+  if (image.provider === "local") {
+    if (
+      deletedAgain.response.status !== 400 ||
+      deletedAgain.body?.error?.code !== "DELETE_FAILED"
+    ) {
+      throw new Error(
+        `local Provider 重复删除应失败：${deletedAgain.response.status} ${JSON.stringify(deletedAgain.body)}`
+      );
+    }
+  } else if (deletedAgain.response.status !== 200) {
     throw new Error(
-      `重复删除应失败：${deletedAgain.response.status} ${JSON.stringify(deletedAgain.body)}`
+      `${image.provider} Provider 重复删除应遵循对象存储幂等语义：${deletedAgain.response.status} ${JSON.stringify(deletedAgain.body)}`
     );
   }
 
