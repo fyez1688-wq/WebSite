@@ -236,6 +236,13 @@ P2 总体验收（2026-07-04）：
 - 已通过：`npm run lint`、`npx tsc --noEmit`、`npm run test:music`、`git diff --check`。
 - 额外尝试 `npm run test:e2e`：首次失败于注册接口 429 限流；避开输出目录锁并提权重跑后仍因注册限流失败，非本次 Header/UI 改动路径。
 
+恢复后 E2E 复验（2026-07-12）：
+
+- `docker/Caddyfile` 已恢复为仓库中的正式域名配置，恢复前遗留的 `dev.pzq1688.com` 工作区改动未保留。
+- 已运行 `npm run test:e2e`，Chromium 4/4 用例通过，共耗时 5.8 秒。
+- 通过范围：后台权限边界；内容草稿、发布、下架、回收站和 Markdown 前台渲染；上传权限、合法图片和伪装文件；分类移动后删除及内容分类迁移。
+- 本次仅记录恢复后验证结果，未修改业务代码、数据库结构或 Docker volume。
+
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 
 - 已在本机 `C:\Users\62342\.codex\config.toml` 追加 DeepSeek provider，并通过 `model_catalog_json` 指向 `C:\Users\62342\.codex\deepseek-model-catalog.json`。

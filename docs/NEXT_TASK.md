@@ -145,6 +145,7 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - 自动化覆盖：新增目标标签不存在、合并后重复请求、后台操作日志页面记录断言；原有合并到自身、关联迁移、重复关系跳过和源标签删除断言继续通过。
 - 已运行：`npx eslint components/admin-taxonomy-client.tsx scripts/tag-merge-smoke.js`、`npx tsc --noEmit`、`npm run test:tag-merge`、`git diff --check`。
 - 收尾修复：`eslint.config.mjs` 已显式忽略 Next.js 构建目录、Playwright 报告、测试结果和依赖目录，避免全量 lint 扫描生成文件；`.gitignore` 已包含对应规则，无需修改。
+- 恢复后复验：2026-07-12 恢复独立的 `docker/Caddyfile` 域名改动后运行 `npm run test:e2e`，Chromium 4/4 用例通过；标签合并任务保持完成状态，本次未进入后续功能开发。
 
 ### 对象存储 Provider 接入
 
