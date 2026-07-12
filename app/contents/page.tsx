@@ -34,7 +34,7 @@ export default async function ContentsPage({
         <p className="muted">按关键词、分类和标签筛选，快速回到你需要的学习资源与技术记录。</p>
       </div>
       <form className="filter-panel mt-7 grid gap-3 p-4 md:grid-cols-4 md:p-5">
-        <label className="relative"><Search className="absolute left-3 top-3 size-4 muted" /><input className="input pl-9" name="q" defaultValue={sp.q} placeholder="关键词搜索" /></label>
+        <label className="relative"><Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 muted" /><input className="input pl-11" name="q" defaultValue={sp.q} placeholder="关键词搜索" /></label>
         <select className="input" name="category" defaultValue={sp.category || ""}>
           <option value="">全部分类</option>
           {categories.map((item) => (

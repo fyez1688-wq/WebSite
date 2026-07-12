@@ -33,15 +33,16 @@ export function MiniPlayer() {
   return (
     <div className="fixed bottom-4 right-4 z-50 w-[calc(100vw-32px)] max-w-sm sm:bottom-5 sm:right-5">
       {!isMiniPlayerOpen ? (
-        <button
-          className="btn ml-auto min-w-0 shadow-lg"
-          onClick={openMiniPlayer}
-          aria-label="展开音乐播放器"
-          title="展开音乐播放器"
-        >
-          <Music2 className="size-5" />
-          <span className="max-w-44 truncate text-sm">{current?.title || "听歌放松"}</span>
-        </button>
+        current ? (
+          <button
+            className="btn btn-primary ml-auto size-11 rounded-full p-0 shadow-lg"
+            onClick={openMiniPlayer}
+            aria-label="展开音乐播放器"
+            title={current.title}
+          >
+            <Music2 className="size-5" />
+          </button>
+        ) : null
       ) : (
         <section className="card p-3 shadow-xl">
           <div className="flex items-start justify-between gap-3">

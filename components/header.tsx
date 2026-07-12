@@ -51,8 +51,8 @@ export function Header() {
         </nav>
         <div className="hidden flex-1 justify-center lg:flex">
           <form action="/search" className="relative w-full max-w-[330px]">
-            <Search className="absolute left-3 top-2.5 size-4 muted" />
-            <input className="input min-h-10 rounded-full pl-9 text-sm" name="q" placeholder="搜索资源、文章或软件" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 muted" />
+            <input className="input min-h-10 rounded-full pl-11 text-sm" name="q" placeholder="搜索资源、文章或软件" />
           </form>
         </div>
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">

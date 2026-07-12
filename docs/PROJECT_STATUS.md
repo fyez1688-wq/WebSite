@@ -293,6 +293,11 @@ R2 图片展示修复（2026-07-13）：
 - 所有封面继续复用 `PublicImage`；远程 R2 图片保持 `unoptimized` 直连，本地图片保持既有优化策略。未修改业务逻辑、权限、上传、对象存储或数据库结构。
 - 已通过：`npm run lint`、`npx tsc --noEmit`、`npm run test:permissions`、`npm run test:upload`、`npm run test:music`、`npm run test:e2e`、`git diff --check`。浏览器桌面/移动视口复验无横向溢出，首页与内容页 R2 图片继续直连加载。
 
+前台导航与搜索细节修复（2026-07-13）：
+
+- 搜索图标改为输入框垂直居中定位并增加左侧内边距，Header、内容页和音乐页的 placeholder/输入文字不会再与图标重合。
+- 三条杠按钮确认是有效的移动端导航开关，保留其展开/收起菜单行为；迷你播放器收起态移除“听歌放松”文字大按钮，仅在已有当前曲目时显示轻量圆形唤起按钮，导航栏音乐入口和完整迷你播放器功能保持。
+
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 
 - 已在本机 `C:\Users\62342\.codex\config.toml` 追加 DeepSeek provider，并通过 `model_catalog_json` 指向 `C:\Users\62342\.codex\deepseek-model-catalog.json`。
