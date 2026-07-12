@@ -164,6 +164,7 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - 上传冒烟测试已兼容 Provider 语义：local Provider 继续要求重复删除返回受控失败；S3/R2 接受 `DeleteObject` 的幂等成功响应。默认开发仍使用 local，生产可通过安全注入 `S3_*` 变量切换 R2/S3。
 - Cloudflare Tunnel 公网部署（2026-07-13）：`fy-site-tunnel` Connector 为 Healthy，Service 为 `HTTP localhost:3000`；R2 真实联调已完成。`pzq1688.com` 外部 HTTPS 返回 200；`test.pzq1688.com` 当前主机 TLS 握手失败，待 Cloudflare DNS/证书状态稳定后复核，不能作为已验收公网入口。
 - 上线后 URL 配置已完成：生产 `.env` 中 `NEXTAUTH_URL` 与 `NEXT_PUBLIC_SITE_URL` 已对齐为 `https://pzq1688.com`，app 已重新构建并确认容器内生效；公网首页返回 200，`/admin` 未登录跳转正常。其余安全检查结果保持正常：Docker 服务健康、R2 有效、robots/sitemap 可访问、数据库备份/恢复脚本存在、Playwright Chromium 已安装。
+- 上线后待验证/排查：在浏览器使用管理员账号完成一次登录、确认登录回调返回正式域名并访问后台；上传 R2 图片后确认前台图片可显示。当前 app 日志显示 Next.js 图片优化器会将 R2 公共域名解析为 `198.18.x.x` 并拒绝为私网地址，上传/删除 API 已通过但 `next/image` 渲染可能受影响；此项应作为独立修复任务处理。
 
 ### 更完整的 Playwright 覆盖
 

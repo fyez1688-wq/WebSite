@@ -272,6 +272,7 @@ Cloudflare Tunnel 公网部署（2026-07-13）：
 - 已通过：`npm run lint`、`npx tsc --noEmit`、`npm run test:permissions`、`npm run test:upload`、`npm run test:music`、`git diff --check`。Playwright Chromium 已安装，本轮仅检查浏览器可用性，未执行 E2E 套件。
 - 备份脚本存在：`scripts/backup-db.ps1` 和 `scripts/restore-db.ps1`；本轮未执行备份或恢复，未清理任何 Docker volume。
 - 生产 URL 配置已修正：`.env` 中的 `NEXTAUTH_URL` 与 `NEXT_PUBLIC_SITE_URL` 已调整为 `https://pzq1688.com`，并已成功重建 app 容器。容器内两项配置均匹配正式域名，公网首页继续返回 200，未登录 `/admin` 继续正常跳转登录页；未修改数据库或 Docker volume。
+- URL 修正后复验：重建后的 app 上 `npm run test:upload` 通过，R2 上传和删除 API 仍正常。容器日志发现 Next.js 图片优化器将 R2 公共域名解析为 `198.18.x.x` 并按私网地址拦截；该问题可能影响 R2 图片通过 `next/image` 的页面显示，需单独处理，不能与上传/删除 API 验收混为一谈。
 
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 
