@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Headphones, Search, SlidersHorizontal } from "lucide-react";
 import { MusicCard } from "@/components/music/music-card";
 import { listPublicMusic } from "@/services/music";
 
@@ -19,17 +20,15 @@ export default async function MusicPage({
   const data = await listPublicMusic(params);
 
   return (
-    <main className="container py-8">
-      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
-        <div>
-          <p className="admin-kicker">背景音乐</p>
-          <h1 className="text-3xl font-semibold">音乐小角落</h1>
-          <p className="mt-2 max-w-2xl muted">只收录管理员确认有权使用、公开授权或允许外链播放的音频资源。</p>
-        </div>
+    <main className="container page-shell">
+      <div className="page-heading">
+        <p className="admin-kicker">背景音乐</p>
+        <h1>音乐小角落</h1>
+        <p className="muted">为学习、阅读和编程留一段不喧闹的背景声。点击播放按钮后才会开始播放。</p>
       </div>
 
-      <form className="card mt-5 grid gap-3 p-4 md:grid-cols-[1fr_220px_auto]">
-        <input className="input" name="q" defaultValue={sp.q} placeholder="搜索歌曲名、作者或专辑" />
+      <form className="filter-panel mt-7 grid gap-3 p-4 md:grid-cols-[1fr_220px_auto] md:p-5">
+        <label className="relative"><Search className="absolute left-3 top-3 size-4 muted" /><input className="input pl-9" name="q" defaultValue={sp.q} placeholder="搜索歌曲名、作者或专辑" /></label>
         <select className="input" name="category" defaultValue={sp.category || ""}>
           <option value="">全部分类</option>
           {data.categories.map((category) => (
@@ -38,19 +37,19 @@ export default async function MusicPage({
             </option>
           ))}
         </select>
-        <button className="btn btn-primary">筛选</button>
+        <button className="btn btn-primary"><SlidersHorizontal className="size-4" />筛选</button>
       </form>
 
-      <p className="mt-4 text-sm muted">共找到 {data.total} 首音乐，点击播放按钮后才会开始播放。</p>
+      <div className="mt-7 flex items-center gap-2 text-sm muted"><Headphones className="size-4 text-[var(--primary)]" />共找到 {data.total} 首音乐</div>
 
       {data.items.length ? (
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {data.items.map((item) => (
             <MusicCard key={item.id} track={item} queue={data.items} />
           ))}
         </div>
       ) : (
-        <div className="card mt-4 p-10 text-center">
+        <div className="empty-state mt-5 p-10 text-center">
           <p className="font-medium">暂无匹配音乐</p>
           <p className="mt-2 muted">可以调整关键词或分类后重新筛选。</p>
         </div>

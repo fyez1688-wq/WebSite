@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight, BookOpen, Headphones, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { ContentCard } from "@/components/content-card";
 import { PublicImage } from "@/components/public-image";
@@ -44,23 +45,30 @@ export default async function HomePage() {
           className="object-cover"
         />
         <div className="container hero-copy">
-          <p className="mb-3 text-sm font-semibold text-amber-200">资源收藏 · 学习资料 · 技术文章 · 软件下载</p>
+          <p className="hero-eyebrow"><Sparkles className="size-3.5" />资源收藏 · 学习资料 · 技术文章</p>
           <h1>{hero?.title || "FY的小站"}</h1>
-          <p className="mt-5 text-lg text-white/86 md:text-xl">
+          <p className="mt-5 text-base leading-8 text-white/86 md:text-xl">
             {hero?.subtitle || "把常用资源、学习路线和技术资料集中整理，方便快速查找、收藏和持续更新。"}
           </p>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/contents" className="btn btn-primary">
               浏览内容
+              <ArrowRight className="size-4" />
             </Link>
-            <Link href="/search" className="btn bg-white/92 text-slate-950">
-              搜索资源
+            <Link href="/music" className="btn border-white/25 bg-white/10 text-white hover:bg-white/16">
+              <Headphones className="size-4" />
+              音乐小角落
             </Link>
+          </div>
+          <div className="hero-metrics">
+            <span>按主题整理</span>
+            <span>持续补充更新</span>
+            <span>登录后同步收藏</span>
           </div>
         </div>
       </section>
 
-      <section className="container -mt-14 grid gap-6 lg:grid-cols-[1fr_340px]">
+      <section className="container -mt-12 grid gap-5 lg:grid-cols-[1fr_340px]">
         <div className="stat-strip relative z-10">
           <div>
             <p className="muted">公开内容</p>
@@ -75,8 +83,9 @@ export default async function HomePage() {
             <p className="mt-2 text-3xl font-semibold">{favoriteCount}</p>
           </div>
         </div>
-        <aside className="card relative z-10 p-5">
-          <h2 className="font-semibold">网站公告</h2>
+        <aside className="card relative z-10 p-5 sm:p-6">
+          <p className="admin-kicker">站点动态</p>
+          <h2 className="mt-1 font-bold">网站公告</h2>
           <div className="mt-3 grid gap-3">
             {announcements.length ? (
               announcements.map((item) => (
@@ -93,7 +102,10 @@ export default async function HomePage() {
       </section>
 
       <section className="container section-band">
-        <h2 className="mb-4 text-xl font-semibold">分类导航</h2>
+        <div className="section-heading">
+          <div><p className="admin-kicker">按主题浏览</p><h2>分类导航</h2></div>
+          <Link href="/contents" className="btn min-h-9 text-sm"><BookOpen className="size-4" />全部内容</Link>
+        </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((item) => (
             <Link key={item.id} href={`/contents?category=${item.slug}`} className="card p-4">
@@ -115,10 +127,10 @@ export default async function HomePage() {
 function HomeBlock({ title, items }: { title: string; items: Parameters<typeof ContentCard>[0]["item"][] }) {
   return (
     <section className="container py-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{title}</h2>
-        <Link href="/contents" className="muted">
-          查看更多
+      <div className="section-heading">
+        <div><p className="admin-kicker">持续整理</p><h2>{title}</h2></div>
+        <Link href="/contents" className="btn min-h-9 text-sm">
+          查看更多<ArrowRight className="size-4" />
         </Link>
       </div>
       {items.length ? (
@@ -128,7 +140,7 @@ function HomeBlock({ title, items }: { title: string; items: Parameters<typeof C
           ))}
         </div>
       ) : (
-        <div className="card p-8 text-center muted">暂无内容</div>
+        <div className="empty-state p-8 text-center muted">暂无内容，稍后再来看看。</div>
       )}
     </section>
   );

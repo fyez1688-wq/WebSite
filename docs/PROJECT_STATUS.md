@@ -287,6 +287,12 @@ R2 图片展示修复（2026-07-13）：
 - 推荐维护流程：开发前 `git pull`；修改后运行 `npm run lint`、`npx tsc --noEmit` 和相关 smoke test；确认无敏感文件后提交并执行 `git push origin main`。
 - 持续运维建议：定期运行 Playwright E2E、配置自动备份并演练恢复、补充监控/健康检查和生产日志查看、监控 Cloudflare Tunnel 状态、为 R2 制定对象备份或生命周期策略，并定期复核管理员真实登录回调。
 
+前台界面 UI/UX 优化（2026-07-13）：
+
+- 优化范围限定在首页、内容列表、音乐页、Header、内容卡片、音乐卡片、迷你播放器相关视觉样式和加载/空状态；统一容器、卡片、按钮、筛选面板、标题层级、悬停与移动端间距。
+- 所有封面继续复用 `PublicImage`；远程 R2 图片保持 `unoptimized` 直连，本地图片保持既有优化策略。未修改业务逻辑、权限、上传、对象存储或数据库结构。
+- 已通过：`npm run lint`、`npx tsc --noEmit`、`npm run test:permissions`、`npm run test:upload`、`npm run test:music`、`npm run test:e2e`、`git diff --check`。浏览器桌面/移动视口复验无横向溢出，首页与内容页 R2 图片继续直连加载。
+
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 
 - 已在本机 `C:\Users\62342\.codex\config.toml` 追加 DeepSeek provider，并通过 `model_catalog_json` 指向 `C:\Users\62342\.codex\deepseek-model-catalog.json`。

@@ -1,3 +1,3 @@
 export default function Loading() {
-  return <main className="container py-8"><div className="card h-40 animate-pulse p-6 muted">加载中...</div></main>;
+  return <main className="container page-shell"><div className="skeleton h-48 rounded-lg" aria-label="页面加载中" /></main>;
 }

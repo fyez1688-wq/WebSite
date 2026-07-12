@@ -23,23 +23,26 @@ export function MusicCard({
   }
 
   return (
-    <article className={`card overflow-hidden ${compact ? "grid grid-cols-[88px_1fr] sm:block" : ""}`}>
-      <PublicImage
+    <article className={`music-card card overflow-hidden ${compact ? "grid grid-cols-[88px_1fr] sm:block" : ""}`}>
+      <div className="cover-frame">
+        <PublicImage
         src={track.coverImage || "/images/default-cover.svg"}
         alt={track.title}
         width={640}
         height={360}
-        className={compact ? "h-full min-h-24 w-full object-cover sm:aspect-video" : "aspect-video w-full object-cover"}
+        className={compact ? "h-full min-h-24 w-full object-cover" : "aspect-video w-full object-cover"}
         loading="lazy"
-      />
-      <div className="grid min-w-0 gap-2 p-4">
+        />
+        {!track.coverImage && <span className="cover-placeholder">音乐封面</span>}
+      </div>
+      <div className="grid min-w-0 gap-3 p-4 sm:p-5">
         <div className="min-w-0">
-          <h3 className="truncate font-semibold">{track.title}</h3>
+          <h3 className="truncate font-bold">{track.title}</h3>
           <p className="truncate text-sm muted">{track.artist || "未知作者"}</p>
         </div>
         <div className="flex items-center justify-between gap-3">
           <span className="truncate text-xs muted">{track.category || track.album || "背景音乐"}</span>
-          <button className="btn size-10 shrink-0 p-0" onClick={onPlay} aria-label={active && isPlaying ? "暂停" : "播放"}>
+          <button className={`btn size-10 shrink-0 rounded-full p-0 ${active ? "btn-primary" : "border-[color-mix(in_srgb,var(--primary)_30%,var(--border))] text-[var(--primary)]"}`} onClick={onPlay} aria-label={active && isPlaying ? "暂停" : "播放"} title={active && isPlaying ? "暂停" : "播放"}>
             {active && isPlaying ? <Pause className="size-4" /> : <Play className="size-4" />}
           </button>
         </div>
