@@ -199,6 +199,11 @@ async function main() {
       throw new Error(`合并到自身应失败：${invalid.response.status} ${JSON.stringify(invalid.body)}`);
     }
 
+    const missingTarget = await mergeTag(baseUrl, jar, source.id, `missing-${runId}`);
+    if (missingTarget.response.status !== 404 || missingTarget.body?.error?.code !== "TARGET_TAG_NOT_FOUND") {
+      throw new Error(`合并到不存在标签应失败：${missingTarget.response.status} ${JSON.stringify(missingTarget.body)}`);
+    }
+
     const merged = await mergeTag(baseUrl, jar, source.id, target.id);
     if (merged.response.status !== 200) {
       throw new Error(`标签合并失败：${merged.response.status} ${JSON.stringify(merged.body)}`);
@@ -223,6 +228,17 @@ async function main() {
     const tagsBody = await json(tagsResponse);
     if (tagsBody.data.items.some((item) => item.id === source.id)) throw new Error("源标签仍然存在");
     if (!tagsBody.data.items.some((item) => item.id === target.id)) throw new Error("目标标签不存在");
+
+    const repeated = await mergeTag(baseUrl, jar, source.id, target.id);
+    if (repeated.response.status !== 404 || repeated.body?.error?.code !== "TAG_NOT_FOUND") {
+      throw new Error(`重复合并已删除源标签应失败：${repeated.response.status} ${JSON.stringify(repeated.body)}`);
+    }
+
+    const logsResponse = await request(baseUrl, "/admin/logs", {}, jar);
+    const logsHtml = await logsResponse.text();
+    if (logsResponse.status !== 200 || !logsHtml.includes(`将标签 ${source.name} 合并到 ${target.name}`)) {
+      throw new Error(`标签合并操作日志未找到：${logsResponse.status}`);
+    }
   } finally {
     for (const item of createdContents) {
       if (item?.id) await deleteContent(baseUrl, jar, item.id).catch(() => undefined);
@@ -231,7 +247,7 @@ async function main() {
     await deleteTag(baseUrl, jar, target.id).catch(() => undefined);
   }
 
-  console.log("标签合并验收通过：关联已迁移，重复关系已跳过，源标签已删除。");
+  console.log("标签合并验收通过：冲突提示正确，关联已迁移，重复关系已跳过，源标签已删除，操作日志已记录。");
 }
 
 main().catch((error) => {

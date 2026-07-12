@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { LoaderCircle, Merge, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 
 type TaxonomyItem = {
   id: string;
@@ -29,6 +29,7 @@ export function AdminTaxonomyClient({
   const [pendingMerge, setPendingMerge] = useState<TaxonomyItem | null>(null);
   const [moveTargetId, setMoveTargetId] = useState("");
   const [mergeTargetId, setMergeTargetId] = useState("");
+  const [mergingId, setMergingId] = useState<string | null>(null);
   const canMerge = endpoint.includes("tags");
 
   async function create(formData: FormData) {
@@ -102,21 +103,30 @@ export function AdminTaxonomyClient({
       setMessage("请选择目标标签");
       return;
     }
-    if (!confirm("确认合并标签？源标签会被删除，内容关联会移动到目标标签。")) return;
-    const res = await fetch(`${endpoint}/${sourceId}/merge`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ targetTagId })
-    });
-    const body = await res.json().catch(() => null);
-    if (!res.ok) {
-      setMessage(body?.error?.message || "合并失败");
-      return;
+    setMergingId(sourceId);
+    setMessage("");
+    try {
+      const res = await fetch(`${endpoint}/${sourceId}/merge`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetTagId })
+      });
+      const body = await res.json().catch(() => null);
+      if (!res.ok) {
+        setMessage(body?.error?.message || "合并失败");
+        return;
+      }
+      setItems((old) => old.filter((item) => item.id !== sourceId));
+      setPendingMerge(null);
+      setMergeTargetId("");
+      const moved = body?.data?.movedRelationCount ?? 0;
+      const skipped = body?.data?.skippedDuplicateRelationCount ?? 0;
+      setMessage(`${body?.message || "标签已合并"}，迁移 ${moved} 条关联，跳过 ${skipped} 条重复关联`);
+    } catch {
+      setMessage("网络请求失败，请重试");
+    } finally {
+      setMergingId(null);
     }
-    setItems((old) => old.filter((item) => item.id !== sourceId));
-    setPendingMerge(null);
-    setMergeTargetId("");
-    setMessage(body?.message || "标签已合并");
   }
 
   return (
@@ -162,17 +172,18 @@ export function AdminTaxonomyClient({
           <div className="mb-4 grid gap-3 rounded border border-[var(--border)] bg-[var(--surface)] p-4 md:grid-cols-[1fr_260px_auto_auto]">
             <div>
               <p className="font-medium">合并标签：{pendingMerge.name}</p>
-              <p className="text-sm muted">源标签会被删除，已关联内容会移动到目标标签，重复关联会自动跳过。</p>
+              <p className="text-sm muted">这是不可撤销操作。源标签会被删除，已关联内容会移动到目标标签，重复关联会自动跳过。</p>
             </div>
             <select className="input" value={mergeTargetId} onChange={(event) => setMergeTargetId(event.target.value)}>
               {items.filter((item) => item.id !== pendingMerge.id).map((item) => (
                 <option key={item.id} value={item.id}>{item.name}</option>
               ))}
             </select>
-            <button type="button" className="btn btn-primary" disabled={!mergeTargetId} onClick={() => merge(pendingMerge.id, mergeTargetId)}>
-              合并标签
+            <button type="button" className="btn btn-primary" disabled={!mergeTargetId || mergingId !== null} onClick={() => merge(pendingMerge.id, mergeTargetId)}>
+              {mergingId === pendingMerge.id ? <LoaderCircle className="size-4 animate-spin" /> : <Merge className="size-4" />}
+              {mergingId === pendingMerge.id ? "合并中" : `确认合并到 ${items.find((item) => item.id === mergeTargetId)?.name || "目标标签"}`}
             </button>
-            <button type="button" className="btn" onClick={() => { setPendingMerge(null); setMergeTargetId(""); }}>
+            <button type="button" className="btn" disabled={mergingId !== null} onClick={() => { setPendingMerge(null); setMergeTargetId(""); }}>
               取消
             </button>
           </div>
@@ -205,7 +216,7 @@ export function AdminTaxonomyClient({
                         </button>
                         {canMerge && (
                           <button
-                            className="btn px-3"
+                            className="btn size-9 p-0"
                             onClick={() => {
                               setPendingMerge(item);
                               setMergeTargetId(items.find((entry) => entry.id !== item.id)?.id || "");
@@ -213,7 +224,7 @@ export function AdminTaxonomyClient({
                             title="合并"
                             disabled={items.length < 2}
                           >
-                            合并
+                            <Merge className="size-4" />
                           </button>
                         )}
                         <button className="btn size-9 p-0" onClick={() => remove(item.id)} title="删除">

@@ -136,11 +136,15 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - 限制：未写入 API Key；使用前需设置 `DEEPSEEK_API_KEY`。当前 `codex-cli 0.142.5` 要求自定义 provider 使用 `wire_api = "responses"`，若 DeepSeek 端不支持 `/v1/responses`，需要额外兼容代理。
 - 已运行：`codex debug models`、`codex doctor`。
 
-### 标签合并高级完善或验收
+### 已完成：标签合并高级完善或验收
 
 - 目标：在已完成的标签合并基础上补充更细的 UI 状态、批量选择或冲突提示验收。
 - 验收条件：合并前后内容关联、重复关系跳过、操作日志和错误提示均有自动化覆盖。
 - 风险：不要改动已通过的标签合并事务逻辑，除非测试暴露真实缺陷。
+- 结果：保留原有事务迁移逻辑；后台合并面板新增不可撤销提示、明确的目标标签、提交锁、加载状态和迁移/重复跳过统计反馈，移除额外浏览器 `confirm`；合并按钮改用图标并提供标题提示。
+- 自动化覆盖：新增目标标签不存在、合并后重复请求、后台操作日志页面记录断言；原有合并到自身、关联迁移、重复关系跳过和源标签删除断言继续通过。
+- 已运行：`npx eslint components/admin-taxonomy-client.tsx scripts/tag-merge-smoke.js`、`npx tsc --noEmit`、`npm run test:tag-merge`、`git diff --check`。
+- 收尾修复：`eslint.config.mjs` 已显式忽略 Next.js 构建目录、Playwright 报告、测试结果和依赖目录，避免全量 lint 扫描生成文件；`.gitignore` 已包含对应规则，无需修改。
 
 ### 对象存储 Provider 接入
 
