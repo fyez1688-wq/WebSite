@@ -271,7 +271,7 @@ Cloudflare Tunnel 公网部署（2026-07-13）：
 - 公网探测通过：`https://pzq1688.com` 和 `/music` 返回 200；`/admin` 返回 307 跳转 `/login`，符合未登录保护预期；`/robots.txt` 返回 200，`/sitemap.xml` 返回 200。
 - 已通过：`npm run lint`、`npx tsc --noEmit`、`npm run test:permissions`、`npm run test:upload`、`npm run test:music`、`git diff --check`。Playwright Chromium 已安装，本轮仅检查浏览器可用性，未执行 E2E 套件。
 - 备份脚本存在：`scripts/backup-db.ps1` 和 `scripts/restore-db.ps1`；本轮未执行备份或恢复，未清理任何 Docker volume。
-- 待处理配置：运行中容器的 `NEXTAUTH_URL` 与 `NEXT_PUBLIC_SITE_URL` 均已设置，但不匹配 `https://pzq1688.com`。应在后续维护窗口将两项设置为正式域名，重建 app 容器后验证登录回调和绝对 URL；本轮未修改 `.env` 或容器配置。
+- 生产 URL 配置已修正：`.env` 中的 `NEXTAUTH_URL` 与 `NEXT_PUBLIC_SITE_URL` 已调整为 `https://pzq1688.com`，并已成功重建 app 容器。容器内两项配置均匹配正式域名，公网首页继续返回 200，未登录 `/admin` 继续正常跳转登录页；未修改数据库或 Docker volume。
 
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 
