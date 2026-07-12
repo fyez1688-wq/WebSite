@@ -258,6 +258,13 @@ Cloudflare R2 真实联调（2026-07-13）：
 - `npm run test:upload` 已按上传响应的 `provider` 区分重复删除语义：local Provider 保持不存在文件返回 400 的断言；R2/S3 接受 `DeleteObject` 对不存在对象返回 200 的幂等结果。非法路径、权限、伪装图片、宽高限制、首次上传和删除断言均保持。
 - 当前默认仍建议本地开发使用 `STORAGE_PROVIDER=local`；生产环境可在安全注入 `S3_*` 凭据后切换至 `r2` 或 `s3`，不得提交真实密钥。
 
+Cloudflare Tunnel 公网部署（2026-07-13）：
+
+- Tunnel 名称为 `fy-site-tunnel`，Connector 状态为 Healthy，Service 指向 `HTTP localhost:3000`。R2 对象存储真实上传、公共 URL 访问和删除联调已完成。
+- `https://pzq1688.com` 已通过外部 HTTPS 探测并返回 200，由 Cloudflare 提供响应。
+- `https://test.pzq1688.com` 在当前 Windows 主机探测时未能完成 TLS 握手，即使忽略证书校验也失败；当前不记录为已验证可访问，需在 Cloudflare DNS/证书状态稳定后复核。
+- 本次部署记录的 Git 基线为 `33f9a65 fix: align upload smoke test with r2 delete semantics`；未修改业务代码、数据库结构或 Docker volume。
+
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 
 - 已在本机 `C:\Users\62342\.codex\config.toml` 追加 DeepSeek provider，并通过 `model_catalog_json` 指向 `C:\Users\62342\.codex\deepseek-model-catalog.json`。
