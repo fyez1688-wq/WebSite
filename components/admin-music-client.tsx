@@ -5,6 +5,7 @@ import { Edit3, Eye, EyeOff, Pause, Play, Plus, Star, Trash2, Upload } from "luc
 import type { FormEvent } from "react";
 import { useRef, useState } from "react";
 import { PublicImage } from "@/components/public-image";
+import { AdminRequiredLabel } from "@/components/admin-required-label";
 
 type MusicTrackRow = {
   id: string;
@@ -192,24 +193,57 @@ export function AdminMusicClient({
       </div>
 
       <form onSubmit={save} className="admin-panel grid gap-3 lg:grid-cols-2">
-        <input className="input" required placeholder="歌曲标题" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-        <input className="input" placeholder="作者 / 歌手" value={form.artist} onChange={(e) => setForm({ ...form, artist: e.target.value })} />
-        <input className="input" placeholder="专辑" value={form.album} onChange={(e) => setForm({ ...form, album: e.target.value })} />
-        <input className="input" placeholder="分类" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-        <input className="input lg:col-span-2" required placeholder="音频 URL（http/https）" value={form.audioUrl} onChange={(e) => setForm({ ...form, audioUrl: e.target.value })} />
-        <div className="grid gap-2 md:grid-cols-[1fr_auto] lg:col-span-2">
-          <input className="input" placeholder="封面图 URL" value={form.coverImage} onChange={(e) => setForm({ ...form, coverImage: e.target.value })} />
-          <label className="btn">
-            <Upload className="size-4" />
-            {uploading ? "上传中" : "上传封面"}
-            <input className="hidden" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => uploadCover(e.target.files?.[0] || null)} />
-          </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel required>歌曲标题</AdminRequiredLabel>
+          <input className="input" required placeholder="歌曲标题" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel>作者 / 歌手</AdminRequiredLabel>
+          <input className="input" placeholder="作者 / 歌手" value={form.artist} onChange={(e) => setForm({ ...form, artist: e.target.value })} />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel>专辑</AdminRequiredLabel>
+          <input className="input" placeholder="专辑" value={form.album} onChange={(e) => setForm({ ...form, album: e.target.value })} />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel>分类</AdminRequiredLabel>
+          <input className="input" placeholder="分类" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+        </label>
+        <label className="grid gap-1.5 lg:col-span-2">
+          <AdminRequiredLabel required>音频 URL</AdminRequiredLabel>
+          <input className="input" required placeholder="音频 URL（http/https）" value={form.audioUrl} onChange={(e) => setForm({ ...form, audioUrl: e.target.value })} />
+        </label>
+        <div className="grid gap-1.5 lg:col-span-2">
+          <AdminRequiredLabel>封面图</AdminRequiredLabel>
+          <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+            <input className="input" placeholder="封面图 URL" value={form.coverImage} onChange={(e) => setForm({ ...form, coverImage: e.target.value })} />
+            <label className="btn">
+              <Upload className="size-4" />
+              {uploading ? "上传中" : "上传封面"}
+              <input className="hidden" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => uploadCover(e.target.files?.[0] || null)} />
+            </label>
+          </div>
         </div>
-        <input className="input" placeholder="来源 URL" value={form.sourceUrl} onChange={(e) => setForm({ ...form, sourceUrl: e.target.value })} />
-        <input className="input" placeholder="授权说明 / license" value={form.license} onChange={(e) => setForm({ ...form, license: e.target.value })} />
-        <input className="input" type="number" min={0} placeholder="时长（秒）" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} />
-        <input className="input" type="number" min={0} placeholder="排序值" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: e.target.value })} />
-        <textarea className="input min-h-24 py-3 lg:col-span-2" placeholder="简介" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel>来源 URL</AdminRequiredLabel>
+          <input className="input" placeholder="来源 URL" value={form.sourceUrl} onChange={(e) => setForm({ ...form, sourceUrl: e.target.value })} />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel>授权说明 / license</AdminRequiredLabel>
+          <input className="input" placeholder="授权说明 / license" value={form.license} onChange={(e) => setForm({ ...form, license: e.target.value })} />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel>时长（秒）</AdminRequiredLabel>
+          <input className="input" type="number" min={0} placeholder="时长（秒）" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel>排序值</AdminRequiredLabel>
+          <input className="input" type="number" min={0} placeholder="排序值" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: e.target.value })} />
+        </label>
+        <label className="grid gap-1.5 lg:col-span-2">
+          <AdminRequiredLabel>简介</AdminRequiredLabel>
+          <textarea className="input min-h-24 py-3" placeholder="简介" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={form.isPublished} onChange={(e) => setForm({ ...form, isPublished: e.target.checked })} />
           发布

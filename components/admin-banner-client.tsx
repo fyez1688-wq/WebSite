@@ -3,6 +3,7 @@
 import type { Banner } from "@prisma/client";
 import { useState } from "react";
 import { Eye, EyeOff, Plus, Trash2 } from "lucide-react";
+import { AdminRequiredLabel } from "@/components/admin-required-label";
 
 export function AdminBannerClient({ initialItems }: { initialItems: Banner[] }) {
   const [items, setItems] = useState(initialItems);
@@ -54,12 +55,27 @@ export function AdminBannerClient({ initialItems }: { initialItems: Banner[] }) 
         {message && <span className="status-pill">{message}</span>}
       </div>
       <form action={create} className="admin-panel grid gap-3 md:grid-cols-2">
-        <input className="input" name="title" placeholder="标题" required />
-        <input className="input" name="subtitle" placeholder="副标题" />
-        <input className="input" name="imageUrl" placeholder="图片地址" required />
-        <input className="input" name="linkUrl" placeholder="跳转链接" />
-        <input className="input" name="sortOrder" type="number" min={0} placeholder="排序" />
-        <button className="btn btn-primary">
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel required>标题</AdminRequiredLabel>
+          <input className="input" name="title" placeholder="标题" required />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel>副标题</AdminRequiredLabel>
+          <input className="input" name="subtitle" placeholder="副标题" />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel required>图片地址</AdminRequiredLabel>
+          <input className="input" name="imageUrl" placeholder="图片地址" required />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel>跳转链接</AdminRequiredLabel>
+          <input className="input" name="linkUrl" placeholder="跳转链接" />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel>排序</AdminRequiredLabel>
+          <input className="input" name="sortOrder" type="number" min={0} placeholder="排序" />
+        </label>
+        <button className="btn btn-primary self-end">
           <Plus className="size-4" />
           新增轮播图
         </button>

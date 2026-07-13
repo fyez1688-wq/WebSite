@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { LoaderCircle, Merge, Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { AdminRequiredLabel } from "@/components/admin-required-label";
 
 type TaxonomyItem = {
   id: string;
@@ -139,11 +140,20 @@ export function AdminTaxonomyClient({
         {message && <span className="status-pill">{message}</span>}
       </div>
       <form action={create} className="admin-panel grid gap-3 md:grid-cols-[1fr_1fr_1.5fr_auto]">
-        <input className="input" name="name" placeholder="名称" required />
-        <input className="input" name="slug" placeholder="英文别名" required />
-        <input className="input" name="description" placeholder="描述" />
-        {hasSort && <input className="input" name="sortOrder" type="number" min={0} placeholder="排序" />}
-        <button className="btn btn-primary">
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel required>名称</AdminRequiredLabel>
+          <input className="input" name="name" placeholder="名称" required />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel required>英文别名</AdminRequiredLabel>
+          <input className="input" name="slug" placeholder="英文别名" required />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel>描述</AdminRequiredLabel>
+          <input className="input" name="description" placeholder="描述" />
+        </label>
+        {hasSort && <label className="grid gap-1.5"><AdminRequiredLabel>排序</AdminRequiredLabel><input className="input" name="sortOrder" type="number" min={0} placeholder="排序" /></label>}
+        <button className="btn btn-primary self-end">
           <Plus className="size-4" />
           新增
         </button>

@@ -3,6 +3,7 @@
 import type { Announcement } from "@prisma/client";
 import { useState } from "react";
 import { Eye, EyeOff, Plus, Trash2 } from "lucide-react";
+import { AdminRequiredLabel } from "@/components/admin-required-label";
 
 export function AdminAnnouncementClient({ initialItems }: { initialItems: Announcement[] }) {
   const [items, setItems] = useState(initialItems);
@@ -51,8 +52,14 @@ export function AdminAnnouncementClient({ initialItems }: { initialItems: Announ
         {message && <span className="status-pill">{message}</span>}
       </div>
       <form action={create} className="admin-panel grid gap-3">
-        <input className="input" name="title" placeholder="公告标题" required />
-        <textarea className="input min-h-24 py-3" name="content" placeholder="公告内容" required />
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel required>公告标题</AdminRequiredLabel>
+          <input className="input" name="title" placeholder="公告标题" required />
+        </label>
+        <label className="grid gap-1.5">
+          <AdminRequiredLabel required>公告内容</AdminRequiredLabel>
+          <textarea className="input min-h-24 py-3" name="content" placeholder="公告内容" required />
+        </label>
         <button className="btn btn-primary w-fit">
           <Plus className="size-4" />
           新增公告

@@ -6,6 +6,7 @@ import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Bold, Code, Eraser, Eye, Heading, ImagePlus, Italic, LinkIcon, List, ListOrdered, Maximize2, Minimize2, Minus, PanelRightOpen, Quote, Save, Strikethrough } from "lucide-react";
 import { MarkdownPreview } from "@/components/markdown-preview";
 import { PublicImage } from "@/components/public-image";
+import { AdminRequiredLabel } from "@/components/admin-required-label";
 
 type ContentWithRelations = Content & {
   tags: (ContentTag & { tag: Tag })[];
@@ -254,8 +255,14 @@ export function AdminContentForm({
         <div className="admin-stack">
           <section className="admin-panel grid gap-3">
             <h3 className="font-semibold">基本信息</h3>
-            <input className="input" value={title} onChange={(e) => { setTitle(e.target.value); if (!slug) setSlug(makeSlug(e.target.value)); markDirty(); }} placeholder="内容标题" maxLength={120} />
-            <input className="input" value={slug} onChange={(e) => { setSlug(e.target.value); markDirty(); }} placeholder="slug，如 nextjs-guide" />
+            <label className="grid gap-1.5">
+              <AdminRequiredLabel required>标题</AdminRequiredLabel>
+              <input className="input" value={title} onChange={(e) => { setTitle(e.target.value); if (!slug) setSlug(makeSlug(e.target.value)); markDirty(); }} placeholder="内容标题" maxLength={120} />
+            </label>
+            <label className="grid gap-1.5">
+              <AdminRequiredLabel required>Slug</AdminRequiredLabel>
+              <input className="input" value={slug} onChange={(e) => { setSlug(e.target.value); markDirty(); }} placeholder="slug，如 nextjs-guide" />
+            </label>
             <textarea className="input min-h-24 py-3" value={summary} onChange={(e) => { setSummary(e.target.value); markDirty(); }} maxLength={500} placeholder="内容简介" />
             <p className="text-right text-xs muted">{summary.length}/500</p>
             <div className={isFullscreen ? "fixed inset-3 z-50 grid rounded-lg border border-[var(--border)] bg-[var(--background)] p-4 shadow-2xl" : ""}>
