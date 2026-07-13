@@ -6,6 +6,10 @@ import { MusicPlayerContext } from "@/components/music/music-player-context";
 
 const playbackErrorMessage = "音频链接可能已失效或暂时无法播放，请稍后再试";
 
+function isAutoplayBlocked(error: unknown) {
+  return error instanceof DOMException && error.name === "NotAllowedError";
+}
+
 export function MusicPlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const countedRef = useRef<string | null>(null);
@@ -63,7 +67,11 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     audio.src = current.audioUrl;
     audio.load();
     if (isPlaying) {
-      audio.play().catch(() => {
+      audio.play().catch((error: unknown) => {
+        if (isAutoplayBlocked(error)) {
+          setIsPlaying(false);
+          return;
+        }
         setError(playbackErrorMessage);
         setIsPlaying(false);
       });

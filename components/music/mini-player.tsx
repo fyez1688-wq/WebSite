@@ -56,26 +56,26 @@ export function MiniPlayer() {
             onChange={(event) => seek(Number(event.target.value))}
             aria-label="播放进度"
           />
-          <div className="grid h-16 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 pt-1 sm:h-[68px] sm:px-4">
+          <div className="grid h-[68px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 pt-1 sm:h-[72px] sm:px-4">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold">{current?.title || "未选择歌曲"}</p>
               <p className="truncate text-xs muted">{current?.artist || "从音乐列表选择歌曲"}</p>
             </div>
             <div className="flex items-center justify-center gap-0.5 sm:gap-1">
-              <Link className="btn size-8 rounded-full p-0" href="/music" aria-label="查看歌曲列表" title="查看歌曲列表">
-                <ListMusic className="size-4" />
+              <Link className="btn size-10 rounded-full p-0" href="/music" aria-label="查看歌曲列表" title="查看歌曲列表">
+                <ListMusic className="size-5" />
               </Link>
-              <button className="btn size-8 rounded-full p-0" onClick={previous} disabled={!current} aria-label="上一首">
-                <SkipBack className="size-4" />
+              <button className="btn size-10 rounded-full p-0" onClick={previous} disabled={!current} aria-label="上一首">
+                <SkipBack className="size-5" />
               </button>
-              <button className="btn btn-primary size-10 rounded-full p-0" onClick={toggle} disabled={!current} aria-label="播放或暂停">
-                {isPlaying ? <Pause className="size-5" /> : <Play className="size-5" />}
+              <button className="btn btn-primary size-11 rounded-full p-0" onClick={toggle} disabled={!current} aria-label="播放或暂停">
+                {isPlaying ? <Pause className="size-6" /> : <Play className="size-6" />}
               </button>
-              <button className="btn size-8 rounded-full p-0" onClick={next} disabled={!current} aria-label="下一首">
-                <SkipForward className="size-4" />
+              <button className="btn size-10 rounded-full p-0" onClick={next} disabled={!current} aria-label="下一首">
+                <SkipForward className="size-5" />
               </button>
-              <button className="btn size-8 rounded-full p-0" disabled aria-label="收藏功能待完善" title="收藏功能待完善">
-                <Heart className="size-4" />
+              <button className="btn size-10 rounded-full p-0" disabled aria-label="收藏功能待完善" title="收藏功能待完善">
+                <Heart className="size-5" />
               </button>
             </div>
             <div className="flex min-w-0 items-center justify-end gap-2">
@@ -93,7 +93,7 @@ export function MiniPlayer() {
                   aria-label="音量"
                 />
               </label>
-              <button className="btn size-8 rounded-full p-0" onClick={closeMiniPlayer} aria-label="收起音乐播放器">
+              <button className="btn size-10 rounded-full p-0" onClick={closeMiniPlayer} aria-label="收起音乐播放器">
                 <ChevronDown className="size-4" />
               </button>
             </div>
