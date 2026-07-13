@@ -5,6 +5,7 @@ import { signOut, useSession } from "next-auth/react";
 import { Menu, Moon, Music2, Search, Sun, UserRound, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { HeaderMusicPanel } from "@/components/music/header-music-panel";
 import { useMusicPlayer } from "@/components/music/music-player-context";
 
 const nav = [
@@ -16,10 +17,11 @@ const nav = [
 
 export function Header() {
   const { data: session } = useSession();
-  const { openMiniPlayer } = useMusicPlayer();
+  const { current } = useMusicPlayer();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [dark, setDark] = useState(false);
+  const [musicPanelOpen, setMusicPanelOpen] = useState(false);
 
   function toggleTheme() {
     const next = !dark;
@@ -65,9 +67,10 @@ export function Header() {
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <button
             className="btn size-10 rounded-full border-[color-mix(in_srgb,var(--primary)_28%,var(--border))] bg-[color-mix(in_srgb,var(--primary)_8%,var(--card))] p-0 text-[var(--primary)] active:scale-95"
-            onClick={openMiniPlayer}
-            aria-label="打开音乐播放器"
-            title="打开音乐播放器"
+            onClick={() => setMusicPanelOpen((value) => !value)}
+            aria-label="打开音乐列表和播放器"
+            aria-expanded={musicPanelOpen}
+            title={current ? "打开音乐列表和播放器" : "选择音乐"}
           >
             <Music2 className="size-5" />
           </button>
@@ -105,6 +108,7 @@ export function Header() {
           </div>
         </div>
       )}
+      {musicPanelOpen && <HeaderMusicPanel onClose={() => setMusicPanelOpen(false)} />}
     </header>
   );
 }
