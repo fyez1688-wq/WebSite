@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Edit3, Eye, EyeOff, LoaderCircle, Pause, Play, Plus, ScanSearch, Star, Trash2, Upload } from "lucide-react";
+import { Edit3, Eye, EyeOff, FileUp, LoaderCircle, Pause, Play, Plus, ScanSearch, Star, Trash2, Upload } from "lucide-react";
 import type { FormEvent } from "react";
 import { useRef, useState } from "react";
 import { PublicImage } from "@/components/public-image";
@@ -71,6 +71,7 @@ export function AdminMusicClient({
   const [message, setMessage] = useState("");
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingAudio, setUploadingAudio] = useState(false);
   const [checkingAudio, setCheckingAudio] = useState(false);
   const [audioCheck, setAudioCheck] = useState<AudioCheckResult | null>(null);
 
@@ -188,6 +189,23 @@ export function AdminMusicClient({
     }
   }
 
+  async function uploadAudio(file: File | null) {
+    if (!file) return;
+    setUploadingAudio(true);
+    const body = new FormData();
+    body.append("file", file);
+    const res = await fetch("/api/admin/music/upload-audio", { method: "POST", body });
+    const data = await res.json().catch(() => null);
+    setUploadingAudio(false);
+    if (res.ok && data?.data?.url) {
+      setForm((old) => ({ ...old, audioUrl: data.data.url }));
+      setAudioCheck(null);
+      setMessage("音频已上传并填入 URL");
+    } else {
+      setMessage(data?.error?.message || "音频上传失败");
+    }
+  }
+
   async function checkAudioUrl() {
     const audioUrl = form.audioUrl.trim();
     if (!audioUrl) {
@@ -251,7 +269,7 @@ export function AdminMusicClient({
         </label>
         <label className="grid gap-1.5 lg:col-span-2">
           <AdminRequiredLabel required>音频 URL</AdminRequiredLabel>
-          <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+          <div className="grid gap-2 md:grid-cols-[1fr_auto_auto]">
             <input
               className="input"
               required
@@ -266,7 +284,23 @@ export function AdminMusicClient({
               {checkingAudio ? <LoaderCircle className="size-4 animate-spin" /> : <ScanSearch className="size-4" />}
               {checkingAudio ? "检测中" : "检测音频链接"}
             </button>
+            <label className="btn">
+              {uploadingAudio ? <LoaderCircle className="size-4 animate-spin" /> : <FileUp className="size-4" />}
+              {uploadingAudio ? "上传中" : "上传本地音频"}
+              <input
+                className="hidden"
+                type="file"
+                accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/ogg,audio/wav,audio/x-wav,.mp3,.m4a,.ogg,.wav"
+                disabled={uploadingAudio}
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  e.target.value = "";
+                  void uploadAudio(file);
+                }}
+              />
+            </label>
           </div>
+          <p className="text-xs muted">支持 MP3、M4A、OGG、WAV，默认最大 50MB，以服务器配置为准。</p>
           {audioCheck && (
             <p className={`text-xs ${audioCheck.ok ? "text-emerald-600" : "text-red-500"}`} role="status">
               {audioCheck.ok ? "正常" : "无法使用"}

@@ -119,6 +119,43 @@ function trackPayload(runId, overrides = {}) {
   };
 }
 
+function wavBuffer() {
+  const buffer = Buffer.alloc(44);
+  buffer.write("RIFF", 0, "ascii");
+  buffer.writeUInt32LE(36, 4);
+  buffer.write("WAVEfmt ", 8, "ascii");
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20);
+  buffer.writeUInt16LE(1, 22);
+  buffer.writeUInt32LE(8_000, 24);
+  buffer.writeUInt32LE(16_000, 28);
+  buffer.writeUInt16LE(2, 32);
+  buffer.writeUInt16LE(16, 34);
+  buffer.write("data", 36, "ascii");
+  return buffer;
+}
+
+async function uploadAudio(baseUrl, jar, buffer, type = "audio/wav") {
+  const form = new FormData();
+  form.append("file", new Blob([buffer], { type }), "smoke.wav");
+  const response = await request(
+    baseUrl,
+    "/api/admin/music/upload-audio",
+    { method: "POST", headers: { origin: baseUrl }, body: form },
+    jar
+  );
+  return { response, body: await response.json().catch(() => null) };
+}
+
+async function deleteAudio(baseUrl, jar, url) {
+  return jsonRequest(
+    baseUrl,
+    "/api/admin/music/upload-audio",
+    { method: "DELETE", headers: { "content-type": "application/json", origin: baseUrl }, body: JSON.stringify({ url }) },
+    jar
+  );
+}
+
 async function main() {
   loadEnv();
   const baseUrl = process.env.MUSIC_SMOKE_BASE_URL || "http://localhost:3000";
@@ -139,6 +176,28 @@ async function main() {
   if (userAdmin.response.status !== 403) throw new Error(`普通用户访问后台音乐接口应返回 403：${userAdmin.response.status}`);
 
   const adminJar = await login(baseUrl, adminEmail, adminPassword);
+
+  const guestAudio = await uploadAudio(baseUrl, null, wavBuffer());
+  if (guestAudio.response.status !== 401) throw new Error(`未登录上传音频应返回 401：${guestAudio.response.status}`);
+
+  const userAudio = await uploadAudio(baseUrl, userJar, wavBuffer());
+  if (userAudio.response.status !== 403) throw new Error(`普通用户上传音频应返回 403：${userAudio.response.status}`);
+
+  const masqueradeAudio = await uploadAudio(baseUrl, adminJar, Buffer.from("not audio"));
+  if (masqueradeAudio.response.status !== 400 || masqueradeAudio.body?.error?.code !== "AUDIO_UPLOAD_FAILED") {
+    throw new Error(`伪装音频应上传失败：${masqueradeAudio.response.status} ${JSON.stringify(masqueradeAudio.body)}`);
+  }
+
+  const uploadedAudio = await uploadAudio(baseUrl, adminJar, wavBuffer());
+  const audio = uploadedAudio.body?.data;
+  if (uploadedAudio.response.status !== 200 || !audio?.url || !["local", "s3", "r2"].includes(audio.provider) || !/^audio\/[0-9a-f-]{36}\.wav$/.test(audio.key || "") || audio.contentType !== "audio/wav" || audio.size !== 44) {
+    throw new Error(`音频上传响应不完整：${uploadedAudio.response.status} ${JSON.stringify(uploadedAudio.body)}`);
+  }
+
+  const deletedAudio = await deleteAudio(baseUrl, adminJar, audio.url);
+  if (deletedAudio.response.status !== 200) {
+    throw new Error(`管理员删除上传音频失败：${deletedAudio.response.status} ${JSON.stringify(deletedAudio.body)}`);
+  }
 
   const linkCheckAsUser = await jsonRequest(
     baseUrl,
@@ -258,7 +317,7 @@ async function main() {
     throw new Error("软删除音乐不应继续出现在前台接口");
   }
 
-  console.log("音乐模块验收通过：公开读取、发布过滤、后台权限、增改软删、非法 URL、音频链接检测 SSRF 防护、推荐接口和播放量防刷均符合预期。");
+  console.log("音乐模块验收通过：公开读取、发布过滤、后台权限、音频上传/删除、增改软删、非法 URL、音频链接检测 SSRF 防护、推荐接口和播放量防刷均符合预期。");
 }
 
 main().catch((error) => {

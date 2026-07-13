@@ -14,7 +14,18 @@ const allowedTypes = new Map([
   ["image/webp", "webp"]
 ]);
 
+const allowedAudioTypes = new Map([
+  ["audio/mpeg", "mp3"],
+  ["audio/mp4", "m4a"],
+  ["audio/x-m4a", "m4a"],
+  ["audio/ogg", "ogg"],
+  ["audio/wav", "wav"],
+  ["audio/x-wav", "wav"]
+]);
+
 type ImageExtension = "jpg" | "png" | "webp";
+type AudioExtension = "mp3" | "m4a" | "ogg" | "wav";
+type StorageKeyPrefix = "covers" | "audio";
 type StorageProviderName = "local" | "s3" | "r2";
 
 type ImageDimensions = { width: number; height: number };
@@ -25,10 +36,19 @@ export type StoredImage = ImageDimensions & {
   provider: StorageProviderName;
 };
 
+export type StoredAudio = {
+  url: string;
+  key: string;
+  provider: StorageProviderName;
+  contentType: string;
+  size: number;
+};
+
 type SaveFileInput = {
   buffer: Buffer;
   contentType: string;
-  extension: ImageExtension;
+  extension: ImageExtension | AudioExtension;
+  keyPrefix: StorageKeyPrefix;
 };
 
 type DeleteFileInput = { key: string };
@@ -45,7 +65,8 @@ type ObjectStorageClient = {
 
 type StorageEnvironment = Record<string, string | undefined>;
 
-const controlledKeyPattern = /^covers\/[0-9a-f-]{36}\.(jpg|png|webp)$/;
+const controlledImageKeyPattern = /^covers\/[0-9a-f-]{36}\.(jpg|png|webp)$/;
+const controlledAudioKeyPattern = /^audio\/[0-9a-f-]{36}\.(mp3|m4a|ogg|wav)$/;
 
 function configuredProvider(): StorageProviderName {
   const provider = (process.env.STORAGE_PROVIDER || "local").trim().toLowerCase();
@@ -67,23 +88,24 @@ function publicBaseUrl() {
   return (process.env.LOCAL_UPLOAD_PUBLIC_BASE_URL || "/uploads").replace(/\/+$/, "");
 }
 
-function assertControlledKey(key: string) {
-  if (!controlledKeyPattern.test(key)) throw new Error("图片地址或对象 key 无效，不允许删除");
+function assertControlledKey(key: string, prefix: StorageKeyPrefix) {
+  const matches = prefix === "covers" ? controlledImageKeyPattern.test(key) : controlledAudioKeyPattern.test(key);
+  if (!matches) throw new Error(`${prefix === "covers" ? "图片" : "音频"}地址或对象 key 无效，不允许删除`);
   return key;
 }
 
-function resolveLocalPath(key: string) {
-  const controlledKey = assertControlledKey(key);
+function resolveLocalPath(key: string, prefix: StorageKeyPrefix) {
+  const controlledKey = assertControlledKey(key, prefix);
   const root = localUploadRoot();
   const resolved = path.resolve(root, ...controlledKey.split("/"));
   const relative = path.relative(root, resolved);
   if (relative.startsWith("..") || path.isAbsolute(relative)) {
-    throw new Error("图片地址或对象 key 无效，不允许删除");
+    throw new Error(`${prefix === "covers" ? "图片" : "音频"}地址或对象 key 无效，不允许删除`);
   }
   return resolved;
 }
 
-function keyFromUrl(url: string, provider: StorageProviderName) {
+function keyFromUrl(url: string, provider: StorageProviderName, prefix: StorageKeyPrefix) {
   const base = provider === "local" ? publicBaseUrl() : requiredS3Config(provider).publicBaseUrl;
   let pathname = url;
   let basePath = base;
@@ -95,35 +117,36 @@ function keyFromUrl(url: string, provider: StorageProviderName) {
       pathname = requestedUrl.pathname;
       basePath = configuredBase.pathname.replace(/\/+$/, "");
     } catch {
-      throw new Error("图片地址无效或不允许删除");
+      throw new Error(`${prefix === "covers" ? "图片" : "音频"}地址无效或不允许删除`);
     }
   } else if (!url.startsWith("/")) {
     try {
       pathname = new URL(url).pathname;
     } catch {
-      throw new Error("图片地址无效或不允许删除");
+      throw new Error(`${prefix === "covers" ? "图片" : "音频"}地址无效或不允许删除`);
     }
   }
-  if (!pathname.startsWith(`${basePath}/`)) throw new Error("图片地址无效或不允许删除");
-  return assertControlledKey(decodeURIComponent(pathname.slice(basePath.length + 1)));
+  if (!pathname.startsWith(`${basePath}/`)) throw new Error(`${prefix === "covers" ? "图片" : "音频"}地址无效或不允许删除`);
+  return assertControlledKey(decodeURIComponent(pathname.slice(basePath.length + 1)), prefix);
 }
 
-function objectKey(extension: ImageExtension) {
-  return `covers/${randomUUID()}.${extension}`;
+function objectKey(prefix: StorageKeyPrefix, extension: ImageExtension | AudioExtension) {
+  return `${prefix}/${randomUUID()}.${extension}`;
 }
 
 export function createLocalStorageProvider(): StorageProvider {
   return {
     name: "local",
-    async saveFile({ buffer, extension }) {
-      const key = objectKey(extension);
-      const destination = resolveLocalPath(key);
+    async saveFile({ buffer, extension, keyPrefix }) {
+      const key = objectKey(keyPrefix, extension);
+      const destination = resolveLocalPath(key, keyPrefix);
       await mkdir(path.dirname(destination), { recursive: true });
       await writeFile(destination, buffer);
       return { url: `${publicBaseUrl()}/${key}`, key, provider: "local" };
     },
     async deleteFile({ key }) {
-      await unlink(resolveLocalPath(key));
+      const prefix = key.startsWith("audio/") ? "audio" : "covers";
+      await unlink(resolveLocalPath(key, prefix));
     }
   };
 }
@@ -185,13 +208,14 @@ export function createS3CompatibleStorageProvider(
   const client = injectedClient || new S3Client(clientConfig);
   return {
     name: provider,
-    async saveFile({ buffer, contentType, extension }) {
-      const key = objectKey(extension);
+    async saveFile({ buffer, contentType, extension, keyPrefix }) {
+      const key = objectKey(keyPrefix, extension);
       await client.send(new PutObjectCommand({ Bucket: config.bucket, Key: key, Body: buffer, ContentType: contentType }));
       return { url: `${config.publicBaseUrl}/${key}`, key, provider };
     },
     async deleteFile({ key }) {
-      await client.send(new DeleteObjectCommand({ Bucket: config.bucket, Key: assertControlledKey(key) }));
+      const prefix = key.startsWith("audio/") ? "audio" : "covers";
+      await client.send(new DeleteObjectCommand({ Bucket: config.bucket, Key: assertControlledKey(key, prefix) }));
     }
   };
 }
@@ -260,7 +284,7 @@ async function validatedImage(file: File) {
 
 export async function saveImage(file: File): Promise<StoredImage> {
   const image = await validatedImage(file);
-  const stored = await storageProvider().saveFile(image);
+  const stored = await storageProvider().saveFile({ ...image, keyPrefix: "covers" });
   return { ...stored, ...image.dimensions };
 }
 
@@ -270,7 +294,7 @@ export async function deleteImage(input: string | { url?: string; key?: string; 
     throw new Error(`图片属于 ${input.provider} Provider，当前启用的是 ${selected.name}`);
   }
   const url = typeof input === "string" ? input : input.url;
-  const key = typeof input === "string" ? keyFromUrl(input, selected.name) : input.key ? assertControlledKey(input.key) : url ? keyFromUrl(url, selected.name) : "";
+  const key = typeof input === "string" ? keyFromUrl(input, selected.name, "covers") : input.key ? assertControlledKey(input.key, "covers") : url ? keyFromUrl(url, selected.name, "covers") : "";
   if (!key) throw new Error("缺少图片地址或对象 key");
   await selected.deleteFile({ key });
 }
@@ -281,4 +305,41 @@ export async function saveLocalImage(file: File) {
 
 export async function deleteLocalImage(url: string) {
   await deleteImage(url);
+}
+
+function audioMaxBytes() {
+  const configured = Number(process.env.MUSIC_AUDIO_MAX_BYTES);
+  return Number.isFinite(configured) && configured > 0 ? Math.floor(configured) : 50 * 1024 * 1024;
+}
+
+function audioSignatureMatches(extension: AudioExtension, buffer: Buffer) {
+  if (extension === "mp3") {
+    return buffer.subarray(0, 3).toString("ascii") === "ID3" || (buffer[0] === 0xff && [0xf2, 0xf3, 0xfb].includes(buffer[1] || 0));
+  }
+  if (extension === "m4a") return buffer.subarray(4, 8).toString("ascii") === "ftyp";
+  if (extension === "ogg") return buffer.subarray(0, 4).toString("ascii") === "OggS";
+  return buffer.subarray(0, 4).toString("ascii") === "RIFF" && buffer.subarray(8, 12).toString("ascii") === "WAVE";
+}
+
+export async function saveAudio(file: File): Promise<StoredAudio> {
+  const extension = allowedAudioTypes.get(file.type) as AudioExtension | undefined;
+  if (!extension) throw new Error("仅支持 MP3、M4A、OGG、WAV 音频文件");
+  const maxBytes = audioMaxBytes();
+  if (file.size > maxBytes) throw new Error(`音频文件不能超过 ${Math.floor(maxBytes / 1024 / 1024)}MB`);
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  if (!audioSignatureMatches(extension, buffer)) throw new Error("音频文件内容与类型不匹配");
+  const stored = await storageProvider().saveFile({ buffer, contentType: file.type, extension, keyPrefix: "audio" });
+  return { ...stored, contentType: file.type, size: file.size };
+}
+
+export async function deleteAudio(input: string | { url?: string; key?: string; provider?: string }) {
+  const selected = storageProvider();
+  if (typeof input !== "string" && input.provider && input.provider !== selected.name) {
+    throw new Error(`音频属于 ${input.provider} Provider，当前启用的是 ${selected.name}`);
+  }
+  const url = typeof input === "string" ? input : input.url;
+  const key = typeof input === "string" ? keyFromUrl(input, selected.name, "audio") : input.key ? assertControlledKey(input.key, "audio") : url ? keyFromUrl(url, selected.name, "audio") : "";
+  if (!key) throw new Error("缺少音频地址或对象 key");
+  await selected.deleteFile({ key });
 }

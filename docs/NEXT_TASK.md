@@ -116,7 +116,7 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - 涉及文件：`prisma/schema.prisma`、`prisma/migrations/20260705000000_music_module/`、`services/music.ts`、`app/music/page.tsx`、`app/admin/music/page.tsx`、`app/api/music/*`、`app/api/admin/music/*`、`components/music/*`、`components/admin-music-client.tsx`、`scripts/music-smoke.js`。
 - 验收条件：游客只能看到已发布音乐；未发布和软删除音乐不暴露；普通用户不能访问后台音乐接口；管理员可新增、编辑、软删除；非法音频 URL 被拒绝；首页推荐接口只返回已发布推荐音乐；播放量接口不暴露未发布音乐。
 - 结果：新增顶部右侧圆形音乐入口、`/music`、全站迷你播放器和 `/admin/music`；新增 `MusicTrack` 模型和正式迁移；后台加入版权提示。
-- 限制：第一版只支持填写合法音频 URL，暂不支持音频上传、转码、歌词、播放列表持久化或音乐收藏。
+- 限制：支持填写合法音频 URL 及管理员受控上传音频；暂不支持转码、歌词、播放列表持久化或音乐收藏。
 - 需要运行：`npx prisma validate`、`npx prisma generate`、`npx prisma migrate deploy`、`npm run lint`、`npx tsc --noEmit`、`npm run test:music`，并按本轮要求复跑既有 smoke/E2E。
 
 ### 已完成：音乐入口改为顶部圆形图标
@@ -170,6 +170,7 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - 前台细节修复：搜索图标已改为垂直居中并预留左侧输入空间；首页 Header 搜索输入框独立定义 `pl-12`，`/music` 筛选框使用图标与输入分离的 flex 结构，均不再受 `.input` 基础 padding 影响；三条杠保留为有效的移动导航开关；收起态迷你播放器不再显示重复的“听歌放松”文字入口，仍可通过导航音乐入口或已有曲目的圆形按钮打开。
 - 后台表单防呆：新增统一必填 `※` 标签，覆盖内容、音乐、分类/标签、轮播图与公告的现有必填字段；标识与服务端 Zod 校验保持一致，可选字段不显示 `※`。
 - 音频链接可靠性：已完成后台音频 URL 健康检测和前台播放失败提示。检测接口只允许管理员同源调用，拒绝私网目标，HEAD 不可用时以不读取响应体的 GET 检查回退；后续可在后台录入或编辑音频时先检测，再决定是否发布。第一版仍不支持本地音频上传。
+- 本地音频上传：已完成管理员上传 MP3、M4A、OGG、WAV 到当前 StorageProvider 的能力，成功后自动回填 `audioUrl`。默认大小上限为 50MB，可通过未提交的 `MUSIC_AUDIO_MAX_BYTES` 调整；音频 key 只允许 `audio/<uuid>.<ext>`，与图片 `covers/` 隔离。后续可评估已关联音乐删除时的音频对象生命周期管理，不应直接删除未知或非受控 key。
 - 学习资料导入：`docs/CONTENT_IMPORT_PLAN.md` 已整理 50 条官方资料候选。后续仅能按小批量草稿人工导入，先确认分类/标签、slug、外链与版权说明，再由管理员审核发布；不得用脚本或接口绕过审核批量写入。
 - 学习资料导入脚本：先运行 `npm run import:content-plan:dry` 查看创建与跳过数量；确认后运行 `npm run import:content-plan`，脚本只写入 `DRAFT` 内容。导入后需在后台抽查正文、分类、标签、来源链接和草稿状态，再人工审核发布。
 - 学习资料导入结果：50 条候选已导入为草稿。下一步是在 `/admin/content` 按分类抽查摘要、原创导读、`officialUrl`、标签和草稿状态，逐条审核后才允许发布。

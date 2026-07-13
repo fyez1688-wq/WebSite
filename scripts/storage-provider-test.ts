@@ -18,12 +18,17 @@ async function testLocalProvider() {
   try {
     const provider = createLocalStorageProvider();
     const buffer = Buffer.from("local-provider-test");
-    const stored = await provider.saveFile({ buffer, contentType: "image/png", extension: "png" });
+    const stored = await provider.saveFile({ buffer, contentType: "image/png", extension: "png", keyPrefix: "covers" });
     assert.equal(stored.provider, "local");
     assert.match(stored.key, /^covers\/[0-9a-f-]{36}\.png$/);
     assert.equal(stored.url, `/uploads/${stored.key}`);
     assert.deepEqual(await readFile(path.join(directory, ...stored.key.split("/"))), buffer);
     await provider.deleteFile({ key: stored.key });
+    const audio = await provider.saveFile({ buffer: Buffer.from("mock-wav"), contentType: "audio/wav", extension: "wav", keyPrefix: "audio" });
+    assert.match(audio.key, /^audio\/[0-9a-f-]{36}\.wav$/);
+    assert.equal(audio.url, `/uploads/${audio.key}`);
+    assert.deepEqual(await readFile(path.join(directory, ...audio.key.split("/"))), Buffer.from("mock-wav"));
+    await provider.deleteFile({ key: audio.key });
     await assert.rejects(() => provider.deleteFile({ key: "covers/../../.env" }), /不允许删除/);
   } finally {
     if (previousDirectory === undefined) delete process.env.LOCAL_UPLOAD_DIR;
@@ -54,7 +59,7 @@ async function testMockS3Provider() {
     S3_FORCE_PATH_STYLE: "true"
   };
   const provider = createS3CompatibleStorageProvider("r2", env, client);
-  const stored = await provider.saveFile({ buffer: Buffer.from("mock-image"), contentType: "image/webp", extension: "webp" });
+  const stored = await provider.saveFile({ buffer: Buffer.from("mock-image"), contentType: "image/webp", extension: "webp", keyPrefix: "covers" });
   assert.equal(stored.provider, "r2");
   assert.equal(stored.url, `https://cdn.example.com/uploads/${stored.key}`);
   assert.ok(commands[0] instanceof PutObjectCommand);
@@ -65,6 +70,14 @@ async function testMockS3Provider() {
   await provider.deleteFile({ key: stored.key });
   assert.ok(commands[1] instanceof DeleteObjectCommand);
   assert.equal(commands[1].input.Key, stored.key);
+  const audio = await provider.saveFile({ buffer: Buffer.from("mock-wav"), contentType: "audio/wav", extension: "wav", keyPrefix: "audio" });
+  assert.match(audio.key, /^audio\/[0-9a-f-]{36}\.wav$/);
+  const audioUpload = commands[2];
+  assert.ok(audioUpload instanceof PutObjectCommand);
+  if (!(audioUpload instanceof PutObjectCommand)) throw new Error("mock R2 音频上传命令错误");
+  assert.equal(audioUpload.input.ContentType, "audio/wav");
+  await provider.deleteFile({ key: audio.key });
+  assert.equal(commands[3].input.Key, audio.key);
 }
 
 async function main() {

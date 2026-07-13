@@ -50,7 +50,7 @@
 - 全站播放器：`components/music/music-player.tsx` 使用浏览器原生 `Audio`，`components/music/mini-player.tsx` 默认收起，用户主动点击后播放，页面内切换尽量保持播放状态。
 - 后台页面：`/admin/music` 通过管理员 layout 的 `requireAdmin()` 保护，表单提交到 `/api/admin/music`。
 - 后台 API：所有写操作调用 `requireAdminApi()` 和 `assertSameOrigin()`，不信任前端传入身份。
-- 音频来源：第一版只支持填写合法可外链音频 URL；封面可复用现有图片上传接口；暂不支持音频文件上传。
+- 音频来源：支持填写合法可外链音频 URL，或由管理员上传 MP3、M4A、OGG、WAV；音频上传复用 StorageProvider，并以受控 `audio/<uuid>.<ext>` key 保存。封面继续复用图片上传接口。
 - URL 安全：`musicTrackSchema` 限制音频 URL 为公开 `http/https`，拒绝危险协议、本机和私网地址。
 - 播放量：`POST /api/music/[id]/play` 只对已发布、未删除音乐计数，并做 30 秒基础防刷。
 
