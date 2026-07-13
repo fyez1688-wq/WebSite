@@ -304,6 +304,11 @@ R2 图片展示修复（2026-07-13）：
 - 已覆盖内容标题/Slug、音乐标题/音频 URL、分类与标签的名称/英文别名、轮播图标题/图片地址、公告标题/内容；可选字段仅保留普通标签，不显示 `※`。
 - 本次不改变任何表单字段、请求载荷或 Zod 服务端校验规则。
 
+资料导入计划（2026-07-13）：
+
+- 已新增 `docs/CONTENT_IMPORT_PLAN.md`，基于官方或开源项目官方文档整理前端、后端与数据库、部署与运维、测试与质量、自动化学习五个方向各 10 条候选资料。
+- 本轮仅生成导入计划，不写入数据库、不调用后台接口、不修改业务代码或数据库结构；全部候选默认按 `LEARNING_RESOURCE`、`DRAFT` 处理，需逐条人工审核后再导入。
+
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 
 - 已在本机 `C:\Users\62342\.codex\config.toml` 追加 DeepSeek provider，并通过 `model_catalog_json` 指向 `C:\Users\62342\.codex\deepseek-model-catalog.json`。
