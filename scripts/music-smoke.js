@@ -140,6 +140,34 @@ async function main() {
 
   const adminJar = await login(baseUrl, adminEmail, adminPassword);
 
+  const linkCheckAsUser = await jsonRequest(
+    baseUrl,
+    "/api/admin/music/check-audio-url",
+    {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: baseUrl },
+      body: JSON.stringify({ audioUrl: "https://example.com/audio.mp3" })
+    },
+    userJar
+  );
+  if (linkCheckAsUser.response.status !== 403) {
+    throw new Error(`普通用户检测音频链接应返回 403：${linkCheckAsUser.response.status}`);
+  }
+
+  const privateLinkCheck = await jsonRequest(
+    baseUrl,
+    "/api/admin/music/check-audio-url",
+    {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: baseUrl },
+      body: JSON.stringify({ audioUrl: "http://127.0.0.1/audio.mp3" })
+    },
+    adminJar
+  );
+  if (privateLinkCheck.response.status !== 400 || privateLinkCheck.body?.error?.code !== "VALIDATION_ERROR") {
+    throw new Error(`私网音频 URL 检测应被拒绝：${privateLinkCheck.response.status} ${JSON.stringify(privateLinkCheck.body)}`);
+  }
+
   const invalid = await jsonRequest(
     baseUrl,
     "/api/admin/music",
@@ -230,7 +258,7 @@ async function main() {
     throw new Error("软删除音乐不应继续出现在前台接口");
   }
 
-  console.log("音乐模块验收通过：公开读取、发布过滤、后台权限、增改软删、非法 URL、推荐接口和播放量防刷均符合预期。");
+  console.log("音乐模块验收通过：公开读取、发布过滤、后台权限、增改软删、非法 URL、音频链接检测 SSRF 防护、推荐接口和播放量防刷均符合预期。");
 }
 
 main().catch((error) => {

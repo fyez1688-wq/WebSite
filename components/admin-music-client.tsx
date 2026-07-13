@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Edit3, Eye, EyeOff, Pause, Play, Plus, Star, Trash2, Upload } from "lucide-react";
+import { Edit3, Eye, EyeOff, LoaderCircle, Pause, Play, Plus, ScanSearch, Star, Trash2, Upload } from "lucide-react";
 import type { FormEvent } from "react";
 import { useRef, useState } from "react";
 import { PublicImage } from "@/components/public-image";
@@ -43,6 +43,13 @@ const emptyForm = {
   isFeatured: false
 };
 
+type AudioCheckResult = {
+  ok: boolean;
+  status: number | null;
+  contentType: string | null;
+  message: string;
+};
+
 export function AdminMusicClient({
   items,
   total,
@@ -64,6 +71,8 @@ export function AdminMusicClient({
   const [message, setMessage] = useState("");
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [checkingAudio, setCheckingAudio] = useState(false);
+  const [audioCheck, setAudioCheck] = useState<AudioCheckResult | null>(null);
 
   function updateQuery(key: string, value: string) {
     const next = new URLSearchParams(searchParams.toString());
@@ -90,11 +99,13 @@ export function AdminMusicClient({
       isPublished: item.isPublished,
       isFeatured: item.isFeatured
     });
+    setAudioCheck(null);
   }
 
   function reset() {
     setEditingId(null);
     setForm(emptyForm);
+    setAudioCheck(null);
   }
 
   function payload() {
@@ -177,6 +188,35 @@ export function AdminMusicClient({
     }
   }
 
+  async function checkAudioUrl() {
+    const audioUrl = form.audioUrl.trim();
+    if (!audioUrl) {
+      setAudioCheck({ ok: false, status: null, contentType: null, message: "请先填写音频 URL" });
+      return;
+    }
+
+    setCheckingAudio(true);
+    setAudioCheck(null);
+    try {
+      const res = await fetch("/api/admin/music/check-audio-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audioUrl })
+      });
+      const body = await res.json().catch(() => null);
+      const result = body?.data as AudioCheckResult | undefined;
+      setAudioCheck(
+        result
+          ? result
+          : { ok: false, status: null, contentType: null, message: body?.error?.message || "无法检测音频链接" }
+      );
+    } catch {
+      setAudioCheck({ ok: false, status: null, contentType: null, message: "检测请求失败，请稍后再试" });
+    } finally {
+      setCheckingAudio(false);
+    }
+  }
+
   return (
     <div className="admin-stack">
       <audio ref={audioRef} onEnded={() => setPreviewId(null)} />
@@ -211,7 +251,30 @@ export function AdminMusicClient({
         </label>
         <label className="grid gap-1.5 lg:col-span-2">
           <AdminRequiredLabel required>音频 URL</AdminRequiredLabel>
-          <input className="input" required placeholder="音频 URL（http/https）" value={form.audioUrl} onChange={(e) => setForm({ ...form, audioUrl: e.target.value })} />
+          <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+            <input
+              className="input"
+              required
+              placeholder="音频 URL（http/https）"
+              value={form.audioUrl}
+              onChange={(e) => {
+                setForm({ ...form, audioUrl: e.target.value });
+                setAudioCheck(null);
+              }}
+            />
+            <button type="button" className="btn" onClick={checkAudioUrl} disabled={checkingAudio || !form.audioUrl.trim()}>
+              {checkingAudio ? <LoaderCircle className="size-4 animate-spin" /> : <ScanSearch className="size-4" />}
+              {checkingAudio ? "检测中" : "检测音频链接"}
+            </button>
+          </div>
+          {audioCheck && (
+            <p className={`text-xs ${audioCheck.ok ? "text-emerald-600" : "text-red-500"}`} role="status">
+              {audioCheck.ok ? "正常" : "无法使用"}
+              {audioCheck.status !== null ? ` · HTTP ${audioCheck.status}` : ""}
+              {audioCheck.contentType ? ` · ${audioCheck.contentType}` : ""}
+              {` · ${audioCheck.message}`}
+            </p>
+          )}
         </label>
         <div className="grid gap-1.5 lg:col-span-2">
           <AdminRequiredLabel>封面图</AdminRequiredLabel>

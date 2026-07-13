@@ -23,6 +23,7 @@ type MusicPlayerContextValue = {
 };
 
 const MusicPlayerContext = createContext<MusicPlayerContextValue | null>(null);
+const playbackErrorMessage = "音频链接可能已失效或暂时无法播放，请稍后再试";
 
 export function MusicPlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -49,7 +50,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
       move(1, true);
     };
     const onError = () => {
-      setError("音频加载失败");
+      setError(playbackErrorMessage);
       setIsPlaying(false);
     };
 
@@ -82,7 +83,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     audio.load();
     if (isPlaying) {
       audio.play().catch(() => {
-        setError("音频加载失败");
+        setError(playbackErrorMessage);
         setIsPlaying(false);
       });
     }
@@ -96,6 +97,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
   }, [current, isPlaying]);
 
   function playTrack(track: MusicTrackItem, nextQueue?: MusicTrackItem[]) {
+    setError("");
     setQueue(nextQueue?.length ? nextQueue : [track]);
     setCurrent(track);
     setIsPlaying(true);
@@ -111,7 +113,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     }
     setIsPlaying(true);
     audio.play().catch(() => {
-      setError("音频加载失败");
+      setError(playbackErrorMessage);
       setIsPlaying(false);
     });
   }
