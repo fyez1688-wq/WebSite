@@ -48,9 +48,10 @@
   - 新增 `npm run test:music` / `scripts/music-smoke.js` 覆盖公开读取、发布过滤、后台权限、增改软删、非法 URL、推荐接口和播放量基础防刷。
   - MusicPlayerContext 已提取到独立模块 `components/music/music-player-context.tsx`，修复 Webpack 代码分割导致 Context 在两个 chunk 中重复实例化的问题；`/music` 页面歌曲卡片和 MiniPlayer 现在共享同一个播放器状态。
   - 顶部音乐按钮已接入独立歌曲面板：调用公开 `/api/music?pageSize=8` 展示已发布歌曲，点击歌曲复用共享 Context 的 `playTrack(track, tracks)`；面板保留当前播放控制、加载/失败/空状态和“查看全部音乐”链接。
-  - 音乐播放器 UI 已调整为轻量横向控制条：导航面板使用紧凑队列和图标控制，底部 MiniPlayer 保留细进度线、歌曲信息、上一首/播放/下一首和 `/music` 列表入口；心形图标仅为禁用的收藏预留，不新增业务功能。
+  - 音乐播放器 UI：导航面板保留紧凑队列、图标控制与 `/music` 入口；底部 MiniPlayer 的横向控制条已卸载，不再占用全站页面空间。心形图标仅为禁用的收藏预留，不新增业务功能。
   - 导航音乐面板进一步简化：移除控制区下方的重复歌曲列表，队列、上一首、下一首与播放按钮提高至至少40px命中区域；在没有当前歌曲时，首次打开会优先从 `/api/music/featured` 选择第一首推荐曲目并使用现有 `playTrack` 开始播放；无推荐时回退到公开音乐列表。若浏览器拦截自动播放，会保留已选曲目而不误报为音频失效，用户可再点击播放。
-  - 按标签生成文章草稿：新增 `scripts/generate-tag-article-drafts.ts` 和 `npm run generate:tag-articles:dry` / `npm run generate:tag-articles`。脚本从数据库读取标签，使用稳定 slug 保证幂等，只创建 `ARTICLE` / `DRAFT` 并写入管理员审计信息和操作日志。第一阶段已对当前 94 个 Tag 各创建 1 篇草稿：实际创建 94，跳过 0，全部正文不少于 5000 字符、slug 唯一且每篇仅关联对应标签；均未发布。
+  - 按标签生成文章草稿：新增 `scripts/generate-tag-article-drafts.ts` 和 `npm run generate:tag-articles:dry` / `npm run generate:tag-articles`。该脚本保留为小批量人工审核前的辅助工具；首阶段已生成的 94 篇草稿因可读性不足被人工清空，不得在未重新设计专题内容和审核流程前重新执行。
+  - 全站底部 MiniPlayer 已移除挂载：页面不再显示固定底部播放条或收起后的音乐浮动按钮；导航栏音乐按钮、其面板与 `/music` 页面继续复用 `MusicPlayerProvider` 和现有播放逻辑。
 
 ## 部分完成
 
