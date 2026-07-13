@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { Menu, Moon, Music2, Search, Sun, UserRound, X } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { type FormEvent, useState } from "react";
 import { HeaderMusicPanel } from "@/components/music/header-music-panel";
 import { useMusicPlayer } from "@/components/music/music-player-context";
 
@@ -19,6 +19,7 @@ export function Header() {
   const { data: session } = useSession();
   const { current } = useMusicPlayer();
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [dark, setDark] = useState(false);
   const [musicPanelOpen, setMusicPanelOpen] = useState(false);
@@ -28,6 +29,12 @@ export function Header() {
     setDark(next);
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("theme", next ? "dark" : "light");
+  }
+
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const query = new FormData(event.currentTarget).get("q")?.toString().trim();
+    router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
   }
 
   return (
@@ -52,7 +59,7 @@ export function Header() {
           )}
         </nav>
         <div className="hidden flex-1 justify-center lg:flex">
-          <form action="/search" className="relative w-full max-w-[330px]">
+          <form onSubmit={submitSearch} className="relative w-full max-w-[330px]">
             <Search
               className="pointer-events-none absolute left-4 top-1/2 z-10 size-4 -translate-y-1/2 text-[var(--muted)]"
               aria-hidden="true"

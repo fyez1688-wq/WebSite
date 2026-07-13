@@ -52,6 +52,7 @@
   - 导航音乐面板进一步简化：移除控制区下方的重复歌曲列表，队列、上一首、下一首与播放按钮提高至至少40px命中区域；在没有当前歌曲时，首次打开会优先从 `/api/music/featured` 选择第一首推荐曲目并使用现有 `playTrack` 开始播放；无推荐时回退到公开音乐列表。若浏览器拦截自动播放，会保留已选曲目而不误报为音频失效，用户可再点击播放。
   - 按标签生成文章草稿：新增 `scripts/generate-tag-article-drafts.ts` 和 `npm run generate:tag-articles:dry` / `npm run generate:tag-articles`。该脚本保留为小批量人工审核前的辅助工具；首阶段已生成的 94 篇草稿因可读性不足被人工清空，不得在未重新设计专题内容和审核流程前重新执行。
   - 全站底部 MiniPlayer 已移除挂载：页面不再显示固定底部播放条或收起后的音乐浮动按钮；导航栏音乐按钮、其面板与 `/music` 页面继续复用 `MusicPlayerProvider` 和现有播放逻辑。
+  - 跨页搜索播放保持：`MusicPlayerProvider` 已是全局隐藏音频核心，内部持有唯一的 `HTMLAudioElement` 且位于根布局 `Providers` 中。Header 搜索从原生表单提交改为 App Router `router.push`，避免整页导航卸载音频实例；搜索和其他客户端路由切换不再中断音乐。
 
 ## 部分完成
 
