@@ -48,6 +48,7 @@
   - 新增 `npm run test:music` / `scripts/music-smoke.js` 覆盖公开读取、发布过滤、后台权限、增改软删、非法 URL、推荐接口和播放量基础防刷。
   - MusicPlayerContext 已提取到独立模块 `components/music/music-player-context.tsx`，修复 Webpack 代码分割导致 Context 在两个 chunk 中重复实例化的问题；`/music` 页面歌曲卡片和 MiniPlayer 现在共享同一个播放器状态。
   - 顶部音乐按钮已接入独立歌曲面板：调用公开 `/api/music?pageSize=8` 展示已发布歌曲，点击歌曲复用共享 Context 的 `playTrack(track, tracks)`；面板保留当前播放控制、加载/失败/空状态和“查看全部音乐”链接。
+  - 音乐播放器 UI 已调整为轻量横向控制条：导航面板使用紧凑队列和图标控制，底部 MiniPlayer 保留细进度线、歌曲信息、上一首/播放/下一首和 `/music` 列表入口；心形图标仅为禁用的收藏预留，不新增业务功能。
 
 ## 部分完成
 

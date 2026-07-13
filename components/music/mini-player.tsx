@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronDown, Music2, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import Link from "next/link";
+import { ChevronDown, Heart, ListMusic, Music2, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
 import { useMusicPlayer } from "@/components/music/music-player-context";
 
 function formatTime(value: number) {
@@ -31,11 +32,11 @@ export function MiniPlayer() {
   } = useMusicPlayer();
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-[calc(100vw-32px)] max-w-sm sm:bottom-5 sm:right-5">
+    <div className="fixed bottom-3 right-3 z-50 w-[calc(100vw-24px)] max-w-[620px] sm:bottom-4 sm:right-4">
       {!isMiniPlayerOpen ? (
         current ? (
           <button
-            className="btn btn-primary ml-auto size-11 rounded-full p-0 shadow-lg"
+            className="btn btn-primary ml-auto size-10 rounded-full p-0 shadow-sm"
             onClick={openMiniPlayer}
             aria-label="展开音乐播放器"
             title={current.title}
@@ -44,56 +45,60 @@ export function MiniPlayer() {
           </button>
         ) : null
       ) : (
-        <section className="card p-3 shadow-xl">
-          <div className="flex items-start justify-between gap-3">
+        <section className="relative overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-sm">
+          <input
+            className="absolute inset-x-0 top-0 z-10 h-1 w-full cursor-pointer accent-[var(--primary)]"
+            type="range"
+            min={0}
+            max={Math.max(duration, 1)}
+            step={1}
+            value={Math.min(progress, Math.max(duration, 1))}
+            onChange={(event) => seek(Number(event.target.value))}
+            aria-label="播放进度"
+          />
+          <div className="grid h-16 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 pt-1 sm:h-[68px] sm:px-4">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold">{current?.title || "未选择歌曲"}</p>
-              <p className="truncate text-xs muted">{current?.artist || "点击歌曲卡片开始播放"}</p>
+              <p className="truncate text-xs muted">{current?.artist || "从音乐列表选择歌曲"}</p>
             </div>
-            <button className="btn size-9 p-0" onClick={closeMiniPlayer} aria-label="收起音乐播放器">
-              <ChevronDown className="size-4" />
-            </button>
-          </div>
-          <div className="mt-3 flex items-center justify-center gap-2">
-            <button className="btn size-9 p-0" onClick={previous} disabled={!current} aria-label="上一首">
-              <SkipBack className="size-4" />
-            </button>
-            <button className="btn btn-primary size-10 p-0" onClick={toggle} disabled={!current} aria-label="播放或暂停">
-              {isPlaying ? <Pause className="size-5" /> : <Play className="size-5" />}
-            </button>
-            <button className="btn size-9 p-0" onClick={next} disabled={!current} aria-label="下一首">
-              <SkipForward className="size-4" />
-            </button>
-          </div>
-          <div className="mt-3 grid gap-2">
-            <input
-              type="range"
-              min={0}
-              max={Math.max(duration, 1)}
-              step={1}
-              value={Math.min(progress, Math.max(duration, 1))}
-              onChange={(event) => seek(Number(event.target.value))}
-              aria-label="播放进度"
-            />
-            <div className="flex justify-between text-xs muted">
-              <span>{formatTime(progress)}</span>
-              <span>{formatTime(duration)}</span>
+            <div className="flex items-center justify-center gap-0.5 sm:gap-1">
+              <Link className="btn size-8 rounded-full p-0" href="/music" aria-label="查看歌曲列表" title="查看歌曲列表">
+                <ListMusic className="size-4" />
+              </Link>
+              <button className="btn size-8 rounded-full p-0" onClick={previous} disabled={!current} aria-label="上一首">
+                <SkipBack className="size-4" />
+              </button>
+              <button className="btn btn-primary size-10 rounded-full p-0" onClick={toggle} disabled={!current} aria-label="播放或暂停">
+                {isPlaying ? <Pause className="size-5" /> : <Play className="size-5" />}
+              </button>
+              <button className="btn size-8 rounded-full p-0" onClick={next} disabled={!current} aria-label="下一首">
+                <SkipForward className="size-4" />
+              </button>
+              <button className="btn size-8 rounded-full p-0" disabled aria-label="收藏功能待完善" title="收藏功能待完善">
+                <Heart className="size-4" />
+              </button>
+            </div>
+            <div className="flex min-w-0 items-center justify-end gap-2">
+              <span className="hidden text-xs muted sm:inline">{formatTime(progress)} / {formatTime(duration)}</span>
+              <label className="hidden items-center gap-1.5 text-xs muted lg:flex">
+                <Volume2 className="size-4" />
+                <input
+                  className="w-20"
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={volume}
+                  onChange={(event) => setVolume(Number(event.target.value))}
+                  aria-label="音量"
+                />
+              </label>
+              <button className="btn size-8 rounded-full p-0" onClick={closeMiniPlayer} aria-label="收起音乐播放器">
+                <ChevronDown className="size-4" />
+              </button>
             </div>
           </div>
-          <label className="mt-2 flex items-center gap-2 text-xs muted">
-            <Volume2 className="size-4" />
-            <input
-              className="min-w-0 flex-1"
-              type="range"
-              min={0}
-              max={1}
-              step={0.01}
-              value={volume}
-              onChange={(event) => setVolume(Number(event.target.value))}
-              aria-label="音量"
-            />
-          </label>
-          {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+          {error && <p className="border-t border-[var(--border)] px-3 py-1 text-xs text-red-500">{error}</p>}
         </section>
       )}
     </div>
