@@ -31,5 +31,5 @@
     ".next-local-build/types/**/*.ts",
     ".next-local-build/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "fy-site-20260705-123524"]
 }

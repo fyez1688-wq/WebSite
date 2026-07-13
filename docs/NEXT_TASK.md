@@ -171,6 +171,7 @@ P3 任务仅为后续计划，本次不开发。开始任一项前仍需按 `AGE
 - 后台表单防呆：新增统一必填 `※` 标签，覆盖内容、音乐、分类/标签、轮播图与公告的现有必填字段；标识与服务端 Zod 校验保持一致，可选字段不显示 `※`。
 - 音频链接可靠性：已完成后台音频 URL 健康检测和前台播放失败提示。检测接口只允许管理员同源调用，拒绝私网目标，HEAD 不可用时以不读取响应体的 GET 检查回退；后续可在后台录入或编辑音频时先检测，再决定是否发布。第一版仍不支持本地音频上传。
 - 本地音频上传：已完成管理员上传 MP3、M4A、OGG、WAV、FLAC 到当前 StorageProvider 的能力，成功后自动回填 `audioUrl`。默认大小上限为 50MB，可通过未提交的 `MUSIC_AUDIO_MAX_BYTES` 调整；音频 key 只允许 `audio/<uuid>.<ext>`，与图片 `covers/` 隔离。后续可评估已关联音乐删除时的音频对象生命周期管理，不应直接删除未知或非受控 key。
+- MusicPlayerContext 重复实例化修复：已将 createContext 和 useMusicPlayer 从 `music-player.tsx` 提取到独立模块 `components/music/music-player-context.tsx`，解决 Webpack 代码分割导致 layout chunk 和 page chunk 各自持有独立 Context 实例的问题。`/music` 页面歌曲卡片和 MiniPlayer 现在共享同一个播放器状态。
 - 学习资料导入：`docs/CONTENT_IMPORT_PLAN.md` 已整理 50 条官方资料候选。后续仅能按小批量草稿人工导入，先确认分类/标签、slug、外链与版权说明，再由管理员审核发布；不得用脚本或接口绕过审核批量写入。
 - 学习资料导入脚本：先运行 `npm run import:content-plan:dry` 查看创建与跳过数量；确认后运行 `npm run import:content-plan`，脚本只写入 `DRAFT` 内容。导入后需在后台抽查正文、分类、标签、来源链接和草稿状态，再人工审核发布。
 - 学习资料导入结果：50 条候选已导入为草稿。下一步是在 `/admin/content` 按分类抽查摘要、原创导读、`officialUrl`、标签和草稿状态，逐条审核后才允许发布。

@@ -15,6 +15,19 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "2mb"
     }
+  },
+  webpack: (config) => {
+    config.optimization.splitChunks.cacheGroups = {
+      ...config.optimization.splitChunks.cacheGroups,
+      musicPlayerContext: {
+        test: /[\\/]music-player-context/,
+        name: "music-player-context",
+        chunks: "all",
+        enforce: true,
+        priority: 20
+      }
+    };
+    return config;
   }
 };
 

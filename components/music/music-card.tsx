@@ -2,7 +2,7 @@
 
 import { Pause, Play } from "lucide-react";
 import type { MusicTrackItem } from "@/components/music/music-types";
-import { useMusicPlayer } from "@/components/music/music-player";
+import { useMusicPlayer } from "@/components/music/music-player-context";
 import { PublicImage } from "@/components/public-image";
 
 export function MusicCard({

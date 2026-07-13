@@ -11,5 +11,6 @@ backups
 postgres-data
 public/uploads
 uploads
+fy-site-20260705-123524
 *.log
 *.tsbuildinfo

@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDown, Music2, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
-import { useMusicPlayer } from "@/components/music/music-player";
+import { useMusicPlayer } from "@/components/music/music-player-context";
 
 function formatTime(value: number) {
   if (!Number.isFinite(value) || value <= 0) return "0:00";

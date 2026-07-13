@@ -1,28 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MusicTrackItem } from "@/components/music/music-types";
+import { MusicPlayerContext } from "@/components/music/music-player-context";
 
-type MusicPlayerContextValue = {
-  queue: MusicTrackItem[];
-  current: MusicTrackItem | null;
-  isPlaying: boolean;
-  volume: number;
-  progress: number;
-  duration: number;
-  error: string;
-  isMiniPlayerOpen: boolean;
-  openMiniPlayer: () => void;
-  closeMiniPlayer: () => void;
-  playTrack: (track: MusicTrackItem, queue?: MusicTrackItem[]) => void;
-  toggle: () => void;
-  next: () => void;
-  previous: () => void;
-  setVolume: (value: number) => void;
-  seek: (value: number) => void;
-};
-
-const MusicPlayerContext = createContext<MusicPlayerContextValue | null>(null);
 const playbackErrorMessage = "音频链接可能已失效或暂时无法播放，请稍后再试";
 
 export function MusicPlayerProvider({ children }: { children: React.ReactNode }) {
@@ -153,10 +134,4 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
   };
 
   return <MusicPlayerContext.Provider value={context}>{children}</MusicPlayerContext.Provider>;
-}
-
-export function useMusicPlayer() {
-  const context = useContext(MusicPlayerContext);
-  if (!context) throw new Error("useMusicPlayer must be used within MusicPlayerProvider");
-  return context;
 }

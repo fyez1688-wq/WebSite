@@ -5,7 +5,7 @@ import { signOut, useSession } from "next-auth/react";
 import { Menu, Moon, Music2, Search, Sun, UserRound, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { useMusicPlayer } from "@/components/music/music-player";
+import { useMusicPlayer } from "@/components/music/music-player-context";
 
 const nav = [
   { href: "/", label: "首页" },

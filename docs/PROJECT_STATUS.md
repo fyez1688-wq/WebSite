@@ -46,6 +46,7 @@
   - 新增后台 API `/api/admin/music`、`/api/admin/music/[id]`。
   - 音频支持填写合法可外链 URL，也支持管理员上传受控的 MP3、M4A、OGG、WAV、FLAC；后台和 README 已补版权与授权提示。
   - 新增 `npm run test:music` / `scripts/music-smoke.js` 覆盖公开读取、发布过滤、后台权限、增改软删、非法 URL、推荐接口和播放量基础防刷。
+  - MusicPlayerContext 已提取到独立模块 `components/music/music-player-context.tsx`，修复 Webpack 代码分割导致 Context 在两个 chunk 中重复实例化的问题；`/music` 页面歌曲卡片和 MiniPlayer 现在共享同一个播放器状态。
 
 ## 部分完成
 
