@@ -55,6 +55,7 @@
   - 跨页搜索播放保持：`MusicPlayerProvider` 已是全局隐藏音频核心，内部持有唯一的 `HTMLAudioElement` 且位于根布局 `Providers` 中。Header 搜索从原生表单提交改为 App Router `router.push`，避免整页导航卸载音频实例；搜索和其他客户端路由切换不再中断音乐。
   - `/music` 筛选播放保持：筛选表单已拆分为客户端 `MusicFilterForm`，通过 `router.push(..., { scroll: false })` 更新 `q` 和 `category` 查询参数，不再执行原生 GET 表单整页导航。筛选只刷新列表，不会暂停或清空当前歌曲、队列和根级音频实例；用户点击筛选结果中的其他歌曲时，才沿用 `playTrack(track, filteredTracks)` 切换队列。
   - 音乐自动续播与播放模式：根级隐藏 Audio Core 的 `ended` 事件改为读取最新队列和当前曲目，避免初次挂载闭包持有空队列而在歌曲结束时停止。默认 `repeat-all` 列表循环，支持切换 `order` 顺序播放和 `repeat-one` 单曲循环；导航音乐面板提供图标按钮切换模式。
+  - 首页 Hero 宽度对齐：`.hero-stage` 已改为与全站 `.container` 相同的 `1220px` 最大宽度和水平边距规则，桌面端不再全屏铺开；移动端使用与主体一致的 12px 侧边距，图片仍由 `PublicImage` 原样渲染。
 
 ## 部分完成
 

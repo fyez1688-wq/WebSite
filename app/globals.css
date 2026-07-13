@@ -337,9 +337,12 @@ a:focus-visible {
 
 .hero-stage {
   position: relative;
+  width: min(1220px, calc(100% - 32px));
+  margin: 20px auto 0;
   min-height: clamp(470px, 66vh, 680px);
   overflow: hidden;
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: 8px;
 }
 
 .hero-stage::after {
@@ -532,6 +535,10 @@ a:focus-visible {
 
   .hero-copy {
     padding: 76px 0 92px;
+  }
+
+  .hero-stage {
+    width: min(100% - 24px, 1220px);
   }
 
   .hero-copy h1 {
