@@ -207,16 +207,46 @@ async function main() {
     throw new Error(`伪装 FLAC 应上传失败：${masqueradeFlac.response.status} ${JSON.stringify(masqueradeFlac.body)}`);
   }
 
+  const fakeFlacContentWrongMime = await uploadAudio(baseUrl, adminJar, flacBuffer(), "audio/flac", "smoke.mp3");
+  if (fakeFlacContentWrongMime.response.status !== 400) {
+    throw new Error(`FLAC 内容 + .mp3 文件名应被拒绝：${fakeFlacContentWrongMime.response.status} ${JSON.stringify(fakeFlacContentWrongMime.body)}`);
+  }
+
+  const octetStreamWrongExt = await uploadAudio(baseUrl, adminJar, flacBuffer(), "application/octet-stream", "smoke.txt");
+  if (octetStreamWrongExt.response.status !== 400) {
+    throw new Error(`application/octet-stream + .txt 应被拒绝：${octetStreamWrongExt.response.status} ${JSON.stringify(octetStreamWrongExt.body)}`);
+  }
+
+  const octetStreamMp3Ext = await uploadAudio(baseUrl, adminJar, flacBuffer(), "application/octet-stream", "smoke.mp3");
+  if (octetStreamMp3Ext.response.status !== 400) {
+    throw new Error(`application/octet-stream + .mp3 应被拒绝：${octetStreamMp3Ext.response.status} ${JSON.stringify(octetStreamMp3Ext.body)}`);
+  }
+
   const uploadedFlac = await uploadAudio(baseUrl, adminJar, flacBuffer(), "audio/flac", "smoke.flac");
   const flac = uploadedFlac.body?.data;
   if (uploadedFlac.response.status !== 200 || !flac?.url || !["local", "s3", "r2"].includes(flac.provider) || !/^audio\/[0-9a-f-]{36}\.flac$/.test(flac.key || "") || flac.contentType !== "audio/flac" || flac.size !== 42) {
     throw new Error(`FLAC 上传响应不完整：${uploadedFlac.response.status} ${JSON.stringify(uploadedFlac.body)}`);
   }
 
+  const uploadedXFlac = await uploadAudio(baseUrl, adminJar, flacBuffer(), "audio/x-flac", "smoke.flac");
+  const xFlac = uploadedXFlac.body?.data;
+  if (uploadedXFlac.response.status !== 200 || !xFlac?.url || !/^audio\/[0-9a-f-]{36}\.flac$/.test(xFlac.key || "") || xFlac.contentType !== "audio/x-flac") {
+    throw new Error(`audio/x-flac 上传应通过：${uploadedXFlac.response.status} ${JSON.stringify(uploadedXFlac.body)}`);
+  }
+
+  const uploadedOctetStream = await uploadAudio(baseUrl, adminJar, flacBuffer(), "application/octet-stream", "smoke.flac");
+  const octetFlac = uploadedOctetStream.body?.data;
+  if (uploadedOctetStream.response.status !== 200 || !octetFlac?.url || !/^audio\/[0-9a-f-]{36}\.flac$/.test(octetFlac.key || "") || octetFlac.contentType !== "application/octet-stream") {
+    throw new Error(`application/octet-stream + .flac + fLaC 上传应通过：${uploadedOctetStream.response.status} ${JSON.stringify(uploadedOctetStream.body)}`);
+  }
+
   const deletedFlac = await deleteAudio(baseUrl, adminJar, flac.url);
   if (deletedFlac.response.status !== 200) {
     throw new Error(`管理员删除 FLAC 上传音频失败：${deletedFlac.response.status} ${JSON.stringify(deletedFlac.body)}`);
   }
+
+  await deleteAudio(baseUrl, adminJar, xFlac.url);
+  await deleteAudio(baseUrl, adminJar, octetFlac.url);
 
   const uploadedAudio = await uploadAudio(baseUrl, adminJar, wavBuffer());
   const audio = uploadedAudio.body?.data;

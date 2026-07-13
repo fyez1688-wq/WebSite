@@ -21,7 +21,8 @@ const allowedAudioTypes = new Map([
   ["audio/ogg", "ogg"],
   ["audio/wav", "wav"],
   ["audio/x-wav", "wav"],
-  ["audio/flac", "flac"]
+  ["audio/flac", "flac"],
+  ["audio/x-flac", "flac"]
 ]);
 
 type ImageExtension = "jpg" | "png" | "webp";
@@ -324,8 +325,21 @@ function audioSignatureMatches(extension: AudioExtension, buffer: Buffer) {
 }
 
 export async function saveAudio(file: File): Promise<StoredAudio> {
-  const extension = allowedAudioTypes.get(file.type) as AudioExtension | undefined;
+  const normalizedType = file.type.split(";")[0].trim().toLowerCase();
+  const fileExt = file.name.includes(".") ? file.name.split(".").pop()?.toLowerCase() || "" : "";
+
+  let extension = allowedAudioTypes.get(normalizedType) as AudioExtension | undefined;
+
+  if (!extension && normalizedType === "application/octet-stream" && fileExt === "flac") {
+    extension = "flac";
+  }
+
+  if (extension === "flac" && fileExt !== "flac") {
+    throw new Error("FLAC 音频文件扩展名必须为 .flac");
+  }
+
   if (!extension) throw new Error("仅支持 MP3、M4A、OGG、WAV、FLAC 音频文件");
+
   const maxBytes = audioMaxBytes();
   if (file.size > maxBytes) throw new Error(`音频文件不能超过 ${Math.floor(maxBytes / 1024 / 1024)}MB`);
 

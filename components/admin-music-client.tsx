@@ -290,7 +290,7 @@ export function AdminMusicClient({
               <input
                 className="hidden"
                 type="file"
-                accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/ogg,audio/wav,audio/x-wav,audio/flac,.mp3,.m4a,.ogg,.wav,.flac"
+                accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/ogg,audio/wav,audio/x-wav,audio/flac,audio/x-flac,.mp3,.m4a,.ogg,.wav,.flac"
                 disabled={uploadingAudio}
                 onChange={(e) => {
                   const file = e.target.files?.[0] || null;
