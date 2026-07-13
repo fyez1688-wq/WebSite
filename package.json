@@ -26,6 +26,8 @@
     "test:e2e:headed": "playwright test --headed",
     "import:content-plan:dry": "tsx scripts/import-content-plan.ts",
     "import:content-plan": "tsx scripts/import-content-plan.ts --execute",
+    "generate:tag-articles:dry": "tsx scripts/generate-tag-article-drafts.ts",
+    "generate:tag-articles": "tsx scripts/generate-tag-article-drafts.ts --execute",
     "docker:df": "docker system df",
     "docker:df:detail": "docker system df -v",
     "docker:clean:build-cache": "docker builder prune -f",
