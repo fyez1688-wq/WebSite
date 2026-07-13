@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   },
   poweredByHeader: false,
   experimental: {
+    proxyClientMaxBodySize: 52428800,
     serverActions: {
       bodySizeLimit: "2mb"
     }
