@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { MusicTrackItem } from "@/components/music/music-types";
-import { MusicPlayerContext } from "@/components/music/music-player-context";
+import { MusicPlayerContext, type MusicPlayMode } from "@/components/music/music-player-context";
 
 const playbackErrorMessage = "音频链接可能已失效或暂时无法播放，请稍后再试";
 
@@ -16,11 +16,21 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
   const [queue, setQueue] = useState<MusicTrackItem[]>([]);
   const [current, setCurrent] = useState<MusicTrackItem | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [playMode, setPlayModeState] = useState<MusicPlayMode>("repeat-all");
   const [volume, setVolumeState] = useState(0.72);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState("");
   const [isMiniPlayerOpen, setMiniPlayerOpen] = useState(false);
+  const queueRef = useRef(queue);
+  const currentRef = useRef(current);
+  const playModeRef = useRef(playMode);
+
+  useEffect(() => {
+    queueRef.current = queue;
+    currentRef.current = current;
+    playModeRef.current = playMode;
+  }, [current, playMode, queue]);
 
   useEffect(() => {
     const audio = new Audio();
@@ -30,9 +40,49 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
 
     const onTimeUpdate = () => setProgress(audio.currentTime || 0);
     const onLoaded = () => setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+    const restartCurrentTrack = () => {
+      audio.currentTime = 0;
+      setProgress(0);
+      setIsPlaying(true);
+      audio.play().catch(() => {
+        setError(playbackErrorMessage);
+        setIsPlaying(false);
+      });
+    };
     const onEnded = () => {
+      const activeQueue = queueRef.current;
+      const activeTrack = currentRef.current;
+      const activeMode = playModeRef.current;
+
+      if (!activeTrack || !activeQueue.length) {
+        setIsPlaying(false);
+        return;
+      }
+
+      if (activeMode === "repeat-one") {
+        restartCurrentTrack();
+        return;
+      }
+
+      const currentIndex = activeQueue.findIndex((item) => item.id === activeTrack.id);
+      const nextTrack = currentIndex >= 0 ? activeQueue[currentIndex + 1] : activeQueue[0];
+      if (nextTrack) {
+        setCurrent(nextTrack);
+        setIsPlaying(true);
+        return;
+      }
+
+      if (activeMode === "repeat-all") {
+        if (activeQueue[0].id === activeTrack.id) {
+          restartCurrentTrack();
+          return;
+        }
+        setCurrent(activeQueue[0]);
+        setIsPlaying(true);
+        return;
+      }
+
       setIsPlaying(false);
-      move(1, true);
     };
     const onError = () => {
       setError(playbackErrorMessage);
@@ -130,6 +180,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     progress,
     duration,
     error,
+    playMode,
     isMiniPlayerOpen,
     openMiniPlayer: () => setMiniPlayerOpen(true),
     closeMiniPlayer: () => setMiniPlayerOpen(false),
@@ -138,6 +189,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     next: () => move(1),
     previous: () => move(-1),
     setVolume: (value: number) => setVolumeState(Math.min(Math.max(value, 0), 1)),
+    setPlayMode: (mode: MusicPlayMode) => setPlayModeState(mode),
     seek
   };
 

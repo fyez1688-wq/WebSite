@@ -1,16 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, ListMusic, LoaderCircle, Pause, Play, SkipBack, SkipForward, X } from "lucide-react";
+import { ArrowDownUp, Heart, ListMusic, LoaderCircle, Pause, Play, Repeat, Repeat1, SkipBack, SkipForward, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useMusicPlayer } from "@/components/music/music-player-context";
+import { type MusicPlayMode, useMusicPlayer } from "@/components/music/music-player-context";
 import type { MusicTrackItem } from "@/components/music/music-types";
 
 type LoadState = "idle" | "loading" | "ready" | "error";
 
 export function HeaderMusicPanel({ onClose }: { onClose: () => void }) {
-  const { current, isPlaying, next, previous, playTrack, toggle } = useMusicPlayer();
+  const { current, isPlaying, next, previous, playMode, playTrack, setPlayMode, toggle } = useMusicPlayer();
   const [loadState, setLoadState] = useState<LoadState>("loading");
+
+  const playModeOptions: MusicPlayMode[] = ["repeat-all", "repeat-one", "order"];
+  const playModeLabel = {
+    "repeat-all": "列表循环",
+    "repeat-one": "单曲循环",
+    order: "顺序播放"
+  } satisfies Record<MusicPlayMode, string>;
+  const PlayModeIcon = playMode === "repeat-one" ? Repeat1 : playMode === "order" ? ArrowDownUp : Repeat;
+
+  function cyclePlayMode() {
+    const currentIndex = playModeOptions.indexOf(playMode);
+    setPlayMode(playModeOptions[(currentIndex + 1) % playModeOptions.length]);
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -72,6 +85,9 @@ export function HeaderMusicPanel({ onClose }: { onClose: () => void }) {
         </button>
         <button className="btn size-11 rounded-full p-0" onClick={next} disabled={!current} aria-label="下一首">
           <SkipForward className="size-5" />
+        </button>
+        <button className="btn size-11 rounded-full p-0" onClick={cyclePlayMode} aria-label={`播放模式：${playModeLabel[playMode]}，点击切换`} title={`播放模式：${playModeLabel[playMode]}`}>
+          <PlayModeIcon className="size-5" />
         </button>
         <button className="btn size-11 rounded-full p-0" disabled aria-label="收藏功能待完善" title="收藏功能待完善">
           <Heart className="size-5" />

@@ -1,6 +1,8 @@
 import { createContext, useContext } from "react";
 import type { MusicTrackItem } from "@/components/music/music-types";
 
+export type MusicPlayMode = "order" | "repeat-all" | "repeat-one";
+
 export type MusicPlayerContextValue = {
   queue: MusicTrackItem[];
   current: MusicTrackItem | null;
@@ -9,6 +11,7 @@ export type MusicPlayerContextValue = {
   progress: number;
   duration: number;
   error: string;
+  playMode: MusicPlayMode;
   isMiniPlayerOpen: boolean;
   openMiniPlayer: () => void;
   closeMiniPlayer: () => void;
@@ -17,6 +20,7 @@ export type MusicPlayerContextValue = {
   next: () => void;
   previous: () => void;
   setVolume: (value: number) => void;
+  setPlayMode: (mode: MusicPlayMode) => void;
   seek: (value: number) => void;
 };
 
