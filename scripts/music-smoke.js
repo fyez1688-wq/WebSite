@@ -49,6 +49,10 @@ function asUrl(baseUrl, pathname) {
   return new URL(pathname, baseUrl);
 }
 
+function publicUrl(baseUrl, url) {
+  return new URL(url, process.env.NEXT_PUBLIC_SITE_URL || baseUrl).toString();
+}
+
 async function request(baseUrl, pathname, options = {}, jar) {
   const headers = new Headers(options.headers || {});
   if (jar?.header()) headers.set("cookie", jar.header());
@@ -254,11 +258,6 @@ async function main() {
     throw new Error(`音频上传响应不完整：${uploadedAudio.response.status} ${JSON.stringify(uploadedAudio.body)}`);
   }
 
-  const deletedAudio = await deleteAudio(baseUrl, adminJar, audio.url);
-  if (deletedAudio.response.status !== 200) {
-    throw new Error(`管理员删除上传音频失败：${deletedAudio.response.status} ${JSON.stringify(deletedAudio.body)}`);
-  }
-
   const linkCheckAsUser = await jsonRequest(
     baseUrl,
     "/api/admin/music/check-audio-url",
@@ -300,6 +299,79 @@ async function main() {
   if (invalid.response.status !== 400 || invalid.body?.error?.code !== "VALIDATION_ERROR") {
     throw new Error(`非法音频 URL 应被拒绝：${invalid.response.status} ${JSON.stringify(invalid.body)}`);
   }
+
+  const managedAudioUrl = publicUrl(baseUrl, audio.url);
+  const managed = await jsonRequest(
+    baseUrl,
+    "/api/admin/music",
+    {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: baseUrl },
+      body: JSON.stringify(trackPayload(`${runId}_managed`, { audioUrl: managedAudioUrl, isPublished: false }))
+    },
+    adminJar
+  );
+  const managedId = managed.body?.data?.item?.id;
+  if (managed.response.status !== 200 || !managedId) throw new Error(`创建受控音频音乐失败：${managed.response.status} ${JSON.stringify(managed.body)}`);
+
+  const managedDeleted = await jsonRequest(
+    baseUrl,
+    `/api/admin/music/${managedId}`,
+    { method: "DELETE", headers: { origin: baseUrl } },
+    adminJar
+  );
+  if (managedDeleted.response.status !== 200 || managedDeleted.body?.data?.audioCleanup !== "deleted") {
+    throw new Error(`删除歌曲时应同步清理受控音频：${managedDeleted.response.status} ${JSON.stringify(managedDeleted.body)}`);
+  }
+  const deletedManagedAudio = await deleteAudio(baseUrl, adminJar, managedAudioUrl);
+  const expectedRepeatDeleteStatus = audio.provider === "local" ? 400 : 200;
+  if (deletedManagedAudio.response.status !== expectedRepeatDeleteStatus) {
+    throw new Error(`受控音频同步删除后状态不符合 Provider 语义：${deletedManagedAudio.response.status} ${JSON.stringify(deletedManagedAudio.body)}`);
+  }
+
+  const sharedUpload = await uploadAudio(baseUrl, adminJar, wavBuffer());
+  const sharedAudio = sharedUpload.body?.data;
+  if (sharedUpload.response.status !== 200 || !sharedAudio?.url) throw new Error(`共享音频上传失败：${sharedUpload.response.status} ${JSON.stringify(sharedUpload.body)}`);
+  const sharedAudioUrl = publicUrl(baseUrl, sharedAudio.url);
+  const sharedOne = await jsonRequest(baseUrl, "/api/admin/music", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: baseUrl },
+    body: JSON.stringify(trackPayload(`${runId}_shared_one`, { audioUrl: sharedAudioUrl, isPublished: false }))
+  }, adminJar);
+  const sharedTwo = await jsonRequest(baseUrl, "/api/admin/music", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: baseUrl },
+    body: JSON.stringify(trackPayload(`${runId}_shared_two`, { audioUrl: sharedAudioUrl, isPublished: false }))
+  }, adminJar);
+  const sharedOneId = sharedOne.body?.data?.item?.id;
+  const sharedTwoId = sharedTwo.body?.data?.item?.id;
+  if (sharedOne.response.status !== 200 || sharedTwo.response.status !== 200 || !sharedOneId || !sharedTwoId) {
+    throw new Error(`创建共享音频歌曲失败：${sharedOne.response.status}/${sharedTwo.response.status}`);
+  }
+  const sharedFirstDelete = await jsonRequest(baseUrl, `/api/admin/music/${sharedOneId}`, { method: "DELETE", headers: { origin: baseUrl } }, adminJar);
+  if (sharedFirstDelete.response.status !== 200 || sharedFirstDelete.body?.data?.audioCleanup !== "retained") {
+    throw new Error(`仍被引用的音频不应删除：${sharedFirstDelete.response.status} ${JSON.stringify(sharedFirstDelete.body)}`);
+  }
+  const sharedLastDelete = await jsonRequest(baseUrl, `/api/admin/music/${sharedTwoId}`, { method: "DELETE", headers: { origin: baseUrl } }, adminJar);
+  if (sharedLastDelete.response.status !== 200 || sharedLastDelete.body?.data?.audioCleanup !== "deleted") {
+    throw new Error(`最后一个引用删除时应清理音频：${sharedLastDelete.response.status} ${JSON.stringify(sharedLastDelete.body)}`);
+  }
+
+  const coverUrl = managedAudioUrl.replace(/\/audio\/[^/]+$/, "/covers/00000000-0000-4000-8000-000000000000.jpg");
+  if (coverUrl === managedAudioUrl) throw new Error("无法构造受控 covers 地址测试用例");
+  const coverAsAudio = await jsonRequest(baseUrl, "/api/admin/music", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: baseUrl },
+    body: JSON.stringify(trackPayload(`${runId}_cover`, { audioUrl: coverUrl, isPublished: false }))
+  }, adminJar);
+  const coverTrackId = coverAsAudio.body?.data?.item?.id;
+  if (coverAsAudio.response.status !== 200 || !coverTrackId) throw new Error(`创建 covers 地址歌曲失败：${coverAsAudio.response.status}`);
+  const coverDelete = await jsonRequest(baseUrl, `/api/admin/music/${coverTrackId}`, { method: "DELETE", headers: { origin: baseUrl } }, adminJar);
+  if (coverDelete.response.status !== 200 || coverDelete.body?.data?.audioCleanup !== "external") {
+    throw new Error(`covers 地址不能作为受控音频删除：${coverDelete.response.status} ${JSON.stringify(coverDelete.body)}`);
+  }
+  const protectedCoverDelete = await deleteAudio(baseUrl, adminJar, coverUrl);
+  if (protectedCoverDelete.response.status !== 400) throw new Error(`音频删除接口不得删除 covers：${protectedCoverDelete.response.status}`);
 
   const created = await jsonRequest(
     baseUrl,
@@ -360,13 +432,21 @@ async function main() {
     throw new Error(`播放量基础防刷失败：${playOne.response.status}/${playTwo.response.status} ${JSON.stringify(playTwo.body)}`);
   }
 
+  const userDelete = await jsonRequest(
+    baseUrl,
+    `/api/admin/music/${publishedId}`,
+    { method: "DELETE", headers: { origin: baseUrl } },
+    userJar
+  );
+  if (userDelete.response.status !== 403) throw new Error(`普通用户删除音乐应返回 403：${userDelete.response.status}`);
+
   const deleted = await jsonRequest(
     baseUrl,
     `/api/admin/music/${publishedId}`,
     { method: "DELETE", headers: { origin: baseUrl } },
     adminJar
   );
-  if (deleted.response.status !== 200 || deleted.body?.data?.item?.deletedAt === null) {
+  if (deleted.response.status !== 200 || deleted.body?.data?.item?.deletedAt === null || deleted.body?.data?.audioCleanup !== "external") {
     throw new Error(`管理员软删除音乐失败：${deleted.response.status} ${JSON.stringify(deleted.body)}`);
   }
 

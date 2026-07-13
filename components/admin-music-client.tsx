@@ -154,7 +154,7 @@ export function AdminMusicClient({
   }
 
   async function remove(id: string) {
-    if (!confirm("确认软删除该音乐？")) return;
+    if (!confirm("确认软删除该音乐？本站上传的音频会同步清理；外部音频链接不会被删除。")) return;
     const res = await fetch(`/api/admin/music/${id}`, { method: "DELETE" });
     const body = await res.json().catch(() => null);
     setMessage(res.ok ? "音乐已删除" : body?.error?.message || "删除失败");

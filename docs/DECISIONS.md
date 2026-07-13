@@ -74,6 +74,7 @@
 - 影响范围：`MusicTrack.audioUrl`、`/music`、首页音乐卡片、全站迷你播放器、`/admin/music`。
 - 当前策略：管理员可手动录入自己有权使用、公开授权或允许外链播放的音频 URL，也可上传自己有权使用的 MP3、M4A、OGG、WAV、FLAC。封面图继续复用图片上传；不提供转码或自动转封装。
 - 安全约束：音频 URL 必须是公开 `http/https`，拒绝 `javascript:`、`data:`、localhost 和私网地址；上传音频限制 MIME、文件头、50MB 默认上限和服务端生成的 `audio/<uuid>.<ext>` key；前台只展示 `isPublished = true` 且 `deletedAt = null` 的音乐。
+- 删除约束：删除歌曲只会尝试清理当前 Provider 公开基址下、严格匹配 `audio/<UUID>.<ext>` 的本站上传对象；外部链接、`covers/` 和无效 key 永不删除。若同一 URL 仍被其他未删除歌曲引用则保留文件；需要清理时先删对象，失败即阻止数据库软删除，避免留下无记录的孤儿策略被误认为成功。
 - 合规约束：后台和 README 明确提示不要上传或引用未经授权的商业音乐，不提供盗版下载功能，不默认自动播放。
 
 ## 图片存储默认 local，可选 S3/R2 Provider

@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { musicTrackSchema } from "@/lib/validators";
+import { deleteAudio, managedAudioKeyFromUrl } from "@/services/storage";
 import type { z } from "zod";
 
 export type MusicTrackInput = z.infer<typeof musicTrackSchema>;
@@ -187,6 +188,27 @@ export async function updateMusicTrack(id: string, input: Partial<MusicTrackInpu
 }
 
 export async function softDeleteMusicTrack(id: string, actorId: string) {
+  const existing = await prisma.musicTrack.findFirst({
+    where: { id, deletedAt: null },
+    select: { id: true, title: true, audioUrl: true }
+  });
+  if (!existing) throw new Error("音乐不存在");
+
+  const managedAudioKey = managedAudioKeyFromUrl(existing.audioUrl);
+  let audioCleanup: "deleted" | "retained" | "external" = "external";
+
+  if (managedAudioKey) {
+    const remainingReferences = await prisma.musicTrack.count({
+      where: { audioUrl: existing.audioUrl, deletedAt: null, id: { not: existing.id } }
+    });
+    if (remainingReferences) {
+      audioCleanup = "retained";
+    } else {
+      await deleteAudio({ key: managedAudioKey });
+      audioCleanup = "deleted";
+    }
+  }
+
   return prisma.$transaction(async (tx) => {
     const item = await tx.musicTrack.update({
       where: { id },
@@ -199,10 +221,10 @@ export async function softDeleteMusicTrack(id: string, actorId: string) {
         target: "MusicTrack",
         targetId: item.id,
         targetTitle: item.title,
-        description: "软删除音乐"
+        description: audioCleanup === "deleted" ? "软删除音乐并清理受控音频" : "软删除音乐"
       }
     });
-    return item;
+    return { item, audioCleanup };
   });
 }
 

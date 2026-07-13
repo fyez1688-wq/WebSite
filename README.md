@@ -92,6 +92,7 @@ S3_FORCE_PATH_STYLE=true
 - 后台入口：`/admin/music`，管理员可新增、编辑、软删除、启用/禁用、设置首页推荐和排序。
 - 音频可填写合法外链 URL，也可由管理员上传 MP3、M4A、OGG、WAV、FLAC 到当前 StorageProvider；封面图可填写 URL 或复用现有图片上传接口。
 - 音频 URL 必须是公开可访问的 `http/https` 地址，服务端会拒绝危险协议和本机/私网地址。
+- 删除后台歌曲时，仅当 `audioUrl` 能匹配当前 StorageProvider 的受控 `audio/<UUID>.<ext>` 公开地址才会同步清理对象；外部链接、`covers/` 路径和仍被其他未删除歌曲引用的音频均不会被删除。
 - 网站不应托管或引用未经授权的商业音乐；音频链接和文件需要管理员自行确认版权。
 - 不提供盗版下载功能，不默认自动播放，用户必须主动点击播放。
 - 基础验收命令：`npm run test:music`。

@@ -39,8 +39,8 @@ export async function DELETE(_request: Request, { params }: Params) {
   if (response) return response;
   const { id } = await params;
   try {
-    const item = await softDeleteMusicTrack(id, session.user.id);
-    return ok({ item }, "音乐已删除");
+    const result = await softDeleteMusicTrack(id, session.user.id);
+    return ok(result, "音乐已删除");
   } catch (error) {
     return fail("MUSIC_DELETE_FAILED", error instanceof Error ? error.message : "音乐删除失败");
   }

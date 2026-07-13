@@ -123,7 +123,10 @@ function keyFromUrl(url: string, provider: StorageProviderName, prefix: StorageK
     }
   } else if (!url.startsWith("/")) {
     try {
-      pathname = new URL(url).pathname;
+      const requestedUrl = new URL(url);
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL;
+      if (!siteUrl || new URL(siteUrl).origin !== requestedUrl.origin) throw new Error();
+      pathname = requestedUrl.pathname;
     } catch {
       throw new Error(`${prefix === "covers" ? "图片" : "音频"}地址无效或不允许删除`);
     }
@@ -358,4 +361,13 @@ export async function deleteAudio(input: string | { url?: string; key?: string; 
   const key = typeof input === "string" ? keyFromUrl(input, selected.name, "audio") : input.key ? assertControlledKey(input.key, "audio") : url ? keyFromUrl(url, selected.name, "audio") : "";
   if (!key) throw new Error("缺少音频地址或对象 key");
   await selected.deleteFile({ key });
+}
+
+export function managedAudioKeyFromUrl(url: string) {
+  const selected = storageProvider();
+  try {
+    return keyFromUrl(url, selected.name, "audio");
+  } catch {
+    return null;
+  }
 }

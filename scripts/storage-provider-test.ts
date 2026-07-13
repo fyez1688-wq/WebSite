@@ -6,6 +6,7 @@ import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import {
   createLocalStorageProvider,
   createS3CompatibleStorageProvider,
+  managedAudioKeyFromUrl,
   requiredS3Config
 } from "../services/storage";
 
@@ -13,8 +14,12 @@ async function testLocalProvider() {
   const directory = await mkdtemp(path.join(os.tmpdir(), "fy-storage-"));
   const previousDirectory = process.env.LOCAL_UPLOAD_DIR;
   const previousBaseUrl = process.env.LOCAL_UPLOAD_PUBLIC_BASE_URL;
+  const previousProvider = process.env.STORAGE_PROVIDER;
+  const previousSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   process.env.LOCAL_UPLOAD_DIR = directory;
   process.env.LOCAL_UPLOAD_PUBLIC_BASE_URL = "/uploads";
+  process.env.STORAGE_PROVIDER = "local";
+  process.env.NEXT_PUBLIC_SITE_URL = "https://site.example";
   try {
     const provider = createLocalStorageProvider();
     const buffer = Buffer.from("local-provider-test");
@@ -28,6 +33,9 @@ async function testLocalProvider() {
     assert.match(audio.key, /^audio\/[0-9a-f-]{36}\.wav$/);
     assert.equal(audio.url, `/uploads/${audio.key}`);
     assert.deepEqual(await readFile(path.join(directory, ...audio.key.split("/"))), Buffer.from("mock-wav"));
+    assert.equal(managedAudioKeyFromUrl(audio.url), audio.key);
+    assert.equal(managedAudioKeyFromUrl(`https://other.example/uploads/${audio.key}`), null);
+    assert.equal(managedAudioKeyFromUrl("/uploads/covers/00000000-0000-4000-8000-000000000000.jpg"), null);
     await provider.deleteFile({ key: audio.key });
     const flac = await provider.saveFile({ buffer: Buffer.from("fLaC-stub"), contentType: "audio/flac", extension: "flac", keyPrefix: "audio" });
     assert.match(flac.key, /^audio\/[0-9a-f-]{36}\.flac$/);
@@ -39,6 +47,10 @@ async function testLocalProvider() {
     else process.env.LOCAL_UPLOAD_DIR = previousDirectory;
     if (previousBaseUrl === undefined) delete process.env.LOCAL_UPLOAD_PUBLIC_BASE_URL;
     else process.env.LOCAL_UPLOAD_PUBLIC_BASE_URL = previousBaseUrl;
+    if (previousProvider === undefined) delete process.env.STORAGE_PROVIDER;
+    else process.env.STORAGE_PROVIDER = previousProvider;
+    if (previousSiteUrl === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+    else process.env.NEXT_PUBLIC_SITE_URL = previousSiteUrl;
     await rm(directory, { recursive: true, force: true });
   }
 }
@@ -82,6 +94,7 @@ async function testMockS3Provider() {
   assert.equal(audioUpload.input.ContentType, "audio/wav");
   await provider.deleteFile({ key: audio.key });
   assert.equal(commands[3].input.Key, audio.key);
+  await assert.rejects(() => provider.deleteFile({ key: "audio/00000000-0000-4000-8000-000000000000.jpg" }), /不允许删除/);
   const flac = await provider.saveFile({ buffer: Buffer.from("fLaC-stub"), contentType: "audio/flac", extension: "flac", keyPrefix: "audio" });
   assert.match(flac.key, /^audio\/[0-9a-f-]{36}\.flac$/);
   const flacUpload = commands[4];

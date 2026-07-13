@@ -52,6 +52,7 @@
 - 后台 API：所有写操作调用 `requireAdminApi()` 和 `assertSameOrigin()`，不信任前端传入身份。
 - 音频来源：支持填写合法可外链音频 URL，或由管理员上传 MP3、M4A、OGG、WAV、FLAC；音频上传复用 StorageProvider，并以受控 `audio/<uuid>.<ext>` key 保存。封面继续复用图片上传接口。
 - URL 安全：`musicTrackSchema` 限制音频 URL 为公开 `http/https`，拒绝危险协议、本机和私网地址。
+- 删除流程：后台软删除歌曲前会仅从当前 Provider 配置的公开基址解析受控 `audio/<UUID>.<ext>` key。没有其他未删除歌曲引用时先删除 local/R2/S3 对象，再软删除记录；清理失败会阻止软删除。外部 URL、`covers/` 和非受控 key 不会传给 StorageProvider。
 - 播放量：`POST /api/music/[id]/play` 只对已发布、未删除音乐计数，并做 30 秒基础防刷。
 
 ## 图片上传流程
