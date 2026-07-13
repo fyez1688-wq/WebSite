@@ -309,6 +309,11 @@ R2 图片展示修复（2026-07-13）：
 - 已新增 `docs/CONTENT_IMPORT_PLAN.md`，基于官方或开源项目官方文档整理前端、后端与数据库、部署与运维、测试与质量、自动化学习五个方向各 10 条候选资料。
 - 本轮仅生成导入计划，不写入数据库、不调用后台接口、不修改业务代码或数据库结构；全部候选默认按 `LEARNING_RESOURCE`、`DRAFT` 处理，需逐条人工审核后再导入。
 
+资料草稿导入（2026-07-13）：
+
+- 新增 `scripts/import-content-plan.ts` 与 `npm run import:content-plan:dry` / `npm run import:content-plan`。脚本从计划文档解析 50 条候选，按 slug 和 `ContentResourceDetail.officialUrl` 去重，只创建缺失分类、标签和草稿内容，不更新或删除已有内容。
+- 已在 app 容器内先完成 dry-run（50 条可创建、0 条重复），再执行实际导入；已创建 50 条 `LEARNING_RESOURCE` 草稿，未发布、未覆盖或删除任何既有内容。
+
 本机 Codex CLI DeepSeek 接入（2026-07-05）：
 
 - 已在本机 `C:\Users\62342\.codex\config.toml` 追加 DeepSeek provider，并通过 `model_catalog_json` 指向 `C:\Users\62342\.codex\deepseek-model-catalog.json`。

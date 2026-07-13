@@ -24,6 +24,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
+    "import:content-plan:dry": "tsx scripts/import-content-plan.ts",
+    "import:content-plan": "tsx scripts/import-content-plan.ts --execute",
     "docker:df": "docker system df",
     "docker:df:detail": "docker system df -v",
     "docker:clean:build-cache": "docker builder prune -f",
