@@ -44,7 +44,7 @@
   - 新增 `/admin/music` 后台音乐管理，支持新增、编辑、软删除、启用/禁用、首页推荐、排序、封面 URL/图片上传复用、音频 URL 和预览播放。
   - 新增公开 API `/api/music`、`/api/music/featured`、`/api/music/[id]/play`。
   - 新增后台 API `/api/admin/music`、`/api/admin/music/[id]`。
-  - 音频支持填写合法可外链 URL，也支持管理员上传受控的 MP3、M4A、OGG、WAV；后台和 README 已补版权与授权提示。
+  - 音频支持填写合法可外链 URL，也支持管理员上传受控的 MP3、M4A、OGG、WAV、FLAC；后台和 README 已补版权与授权提示。
   - 新增 `npm run test:music` / `scripts/music-smoke.js` 覆盖公开读取、发布过滤、后台权限、增改软删、非法 URL、推荐接口和播放量基础防刷。
 
 ## 部分完成
@@ -57,7 +57,7 @@
 - 测试：完成命令验证、部分接口冒烟测试和基础 Playwright E2E 套件。
 - 听歌模块：当前支持受控本地音频上传，但暂不支持转码、歌词、播放列表保存和收藏系统接入；音乐喜欢/收藏未强行复用内容收藏系统。
 - 音频链接可靠性：后台音乐表单的音频 URL 字段可调用 `/api/admin/music/check-audio-url` 检测。接口仅限管理员和同源请求，限制公开 `http/https` 地址，拒绝本机/私网解析结果，5 秒超时，优先 HEAD，必要时以取消响应体的 GET 回退；结果显示 HTTP 状态、内容类型和正常/失效原因。前台原生 Audio 触发错误时会提示“音频链接可能已失效或暂时无法播放，请稍后再试”，切换歌曲时清除提示。
-- 本地音频上传：后台音乐表单支持上传 MP3、M4A、OGG、WAV；上传 API 为 `/api/admin/music/upload-audio`，仅管理员同源请求可用。音频经过 MIME、文件头和默认 50MB 限制校验后，使用当前 StorageProvider 写入 `audio/<uuid>.<ext>`，成功 URL 自动填入既有 `MusicTrack.audioUrl`；`r2`/`s3` 写入对象存储，`local` 写入 `public/uploads/audio`。图片仍只使用 `covers/` 路径。
+- 本地音频上传：后台音乐表单支持上传 MP3、M4A、OGG、WAV、FLAC；上传 API 为 `/api/admin/music/upload-audio`，仅管理员同源请求可用。音频经过 MIME、文件头和默认 50MB 限制校验后，使用当前 StorageProvider 写入 `audio/<uuid>.<ext>`，成功 URL 自动填入既有 `MusicTrack.audioUrl`；`r2`/`s3` 写入对象存储，`local` 写入 `public/uploads/audio`。图片仍只使用 `covers/` 路径。
 
 ## 未开始
 

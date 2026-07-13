@@ -20,11 +20,12 @@ const allowedAudioTypes = new Map([
   ["audio/x-m4a", "m4a"],
   ["audio/ogg", "ogg"],
   ["audio/wav", "wav"],
-  ["audio/x-wav", "wav"]
+  ["audio/x-wav", "wav"],
+  ["audio/flac", "flac"]
 ]);
 
 type ImageExtension = "jpg" | "png" | "webp";
-type AudioExtension = "mp3" | "m4a" | "ogg" | "wav";
+type AudioExtension = "mp3" | "m4a" | "ogg" | "wav" | "flac";
 type StorageKeyPrefix = "covers" | "audio";
 type StorageProviderName = "local" | "s3" | "r2";
 
@@ -66,7 +67,7 @@ type ObjectStorageClient = {
 type StorageEnvironment = Record<string, string | undefined>;
 
 const controlledImageKeyPattern = /^covers\/[0-9a-f-]{36}\.(jpg|png|webp)$/;
-const controlledAudioKeyPattern = /^audio\/[0-9a-f-]{36}\.(mp3|m4a|ogg|wav)$/;
+const controlledAudioKeyPattern = /^audio\/[0-9a-f-]{36}\.(mp3|m4a|ogg|wav|flac)$/;
 
 function configuredProvider(): StorageProviderName {
   const provider = (process.env.STORAGE_PROVIDER || "local").trim().toLowerCase();
@@ -318,12 +319,13 @@ function audioSignatureMatches(extension: AudioExtension, buffer: Buffer) {
   }
   if (extension === "m4a") return buffer.subarray(4, 8).toString("ascii") === "ftyp";
   if (extension === "ogg") return buffer.subarray(0, 4).toString("ascii") === "OggS";
+  if (extension === "flac") return buffer.subarray(0, 4).toString("ascii") === "fLaC";
   return buffer.subarray(0, 4).toString("ascii") === "RIFF" && buffer.subarray(8, 12).toString("ascii") === "WAVE";
 }
 
 export async function saveAudio(file: File): Promise<StoredAudio> {
   const extension = allowedAudioTypes.get(file.type) as AudioExtension | undefined;
-  if (!extension) throw new Error("仅支持 MP3、M4A、OGG、WAV 音频文件");
+  if (!extension) throw new Error("仅支持 MP3、M4A、OGG、WAV、FLAC 音频文件");
   const maxBytes = audioMaxBytes();
   if (file.size > maxBytes) throw new Error(`音频文件不能超过 ${Math.floor(maxBytes / 1024 / 1024)}MB`);
 

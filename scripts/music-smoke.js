@@ -135,9 +135,23 @@ function wavBuffer() {
   return buffer;
 }
 
-async function uploadAudio(baseUrl, jar, buffer, type = "audio/wav") {
+function flacBuffer() {
+  const buffer = Buffer.alloc(42);
+  buffer.write("fLaC", 0, "ascii");
+  buffer.writeUInt8(0x80, 4);
+  buffer.writeUIntBE(0, 5, 3);
+  buffer.writeUInt8(0x00, 8);
+  buffer.writeUIntBE(44100, 10, 3);
+  buffer.writeUInt8(0x08, 18);
+  buffer.writeUIntBE(0, 22, 3);
+  buffer.writeUIntBE(0, 36, 3);
+  buffer.writeUIntBE(960, 40, 2);
+  return buffer;
+}
+
+async function uploadAudio(baseUrl, jar, buffer, type = "audio/wav", filename = "smoke.wav") {
   const form = new FormData();
-  form.append("file", new Blob([buffer], { type }), "smoke.wav");
+  form.append("file", new Blob([buffer], { type }), filename);
   const response = await request(
     baseUrl,
     "/api/admin/music/upload-audio",
@@ -186,6 +200,22 @@ async function main() {
   const masqueradeAudio = await uploadAudio(baseUrl, adminJar, Buffer.from("not audio"));
   if (masqueradeAudio.response.status !== 400 || masqueradeAudio.body?.error?.code !== "AUDIO_UPLOAD_FAILED") {
     throw new Error(`伪装音频应上传失败：${masqueradeAudio.response.status} ${JSON.stringify(masqueradeAudio.body)}`);
+  }
+
+  const masqueradeFlac = await uploadAudio(baseUrl, adminJar, Buffer.from("not flac"), "audio/flac", "smoke.flac");
+  if (masqueradeFlac.response.status !== 400 || masqueradeFlac.body?.error?.code !== "AUDIO_UPLOAD_FAILED") {
+    throw new Error(`伪装 FLAC 应上传失败：${masqueradeFlac.response.status} ${JSON.stringify(masqueradeFlac.body)}`);
+  }
+
+  const uploadedFlac = await uploadAudio(baseUrl, adminJar, flacBuffer(), "audio/flac", "smoke.flac");
+  const flac = uploadedFlac.body?.data;
+  if (uploadedFlac.response.status !== 200 || !flac?.url || !["local", "s3", "r2"].includes(flac.provider) || !/^audio\/[0-9a-f-]{36}\.flac$/.test(flac.key || "") || flac.contentType !== "audio/flac" || flac.size !== 42) {
+    throw new Error(`FLAC 上传响应不完整：${uploadedFlac.response.status} ${JSON.stringify(uploadedFlac.body)}`);
+  }
+
+  const deletedFlac = await deleteAudio(baseUrl, adminJar, flac.url);
+  if (deletedFlac.response.status !== 200) {
+    throw new Error(`管理员删除 FLAC 上传音频失败：${deletedFlac.response.status} ${JSON.stringify(deletedFlac.body)}`);
   }
 
   const uploadedAudio = await uploadAudio(baseUrl, adminJar, wavBuffer());

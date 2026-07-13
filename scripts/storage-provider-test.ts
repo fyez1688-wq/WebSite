@@ -29,6 +29,10 @@ async function testLocalProvider() {
     assert.equal(audio.url, `/uploads/${audio.key}`);
     assert.deepEqual(await readFile(path.join(directory, ...audio.key.split("/"))), Buffer.from("mock-wav"));
     await provider.deleteFile({ key: audio.key });
+    const flac = await provider.saveFile({ buffer: Buffer.from("fLaC-stub"), contentType: "audio/flac", extension: "flac", keyPrefix: "audio" });
+    assert.match(flac.key, /^audio\/[0-9a-f-]{36}\.flac$/);
+    assert.equal(flac.url, `/uploads/${flac.key}`);
+    await provider.deleteFile({ key: flac.key });
     await assert.rejects(() => provider.deleteFile({ key: "covers/../../.env" }), /不允许删除/);
   } finally {
     if (previousDirectory === undefined) delete process.env.LOCAL_UPLOAD_DIR;
@@ -78,6 +82,14 @@ async function testMockS3Provider() {
   assert.equal(audioUpload.input.ContentType, "audio/wav");
   await provider.deleteFile({ key: audio.key });
   assert.equal(commands[3].input.Key, audio.key);
+  const flac = await provider.saveFile({ buffer: Buffer.from("fLaC-stub"), contentType: "audio/flac", extension: "flac", keyPrefix: "audio" });
+  assert.match(flac.key, /^audio\/[0-9a-f-]{36}\.flac$/);
+  const flacUpload = commands[4];
+  assert.ok(flacUpload instanceof PutObjectCommand);
+  if (!(flacUpload instanceof PutObjectCommand)) throw new Error("mock R2 FLAC 上传命令错误");
+  assert.equal(flacUpload.input.ContentType, "audio/flac");
+  await provider.deleteFile({ key: flac.key });
+  assert.equal(commands[5].input.Key, flac.key);
 }
 
 async function main() {

@@ -290,7 +290,7 @@ export function AdminMusicClient({
               <input
                 className="hidden"
                 type="file"
-                accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/ogg,audio/wav,audio/x-wav,.mp3,.m4a,.ogg,.wav"
+                accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/ogg,audio/wav,audio/x-wav,audio/flac,.mp3,.m4a,.ogg,.wav,.flac"
                 disabled={uploadingAudio}
                 onChange={(e) => {
                   const file = e.target.files?.[0] || null;
@@ -300,7 +300,7 @@ export function AdminMusicClient({
               />
             </label>
           </div>
-          <p className="text-xs muted">支持 MP3、M4A、OGG、WAV，默认最大 50MB，以服务器配置为准。</p>
+          <p className="text-xs muted">支持 MP3、M4A、OGG、WAV、FLAC，默认最大 50MB，以服务器配置为准。</p>
           {audioCheck && (
             <p className={`text-xs ${audioCheck.ok ? "text-emerald-600" : "text-red-500"}`} role="status">
               {audioCheck.ok ? "正常" : "无法使用"}
