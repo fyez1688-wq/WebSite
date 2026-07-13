@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Headphones, Search, SlidersHorizontal } from "lucide-react";
+import { Headphones } from "lucide-react";
 import { MusicCard } from "@/components/music/music-card";
+import { MusicFilterForm } from "@/components/music/music-filter-form";
 import { listPublicMusic } from "@/services/music";
 
 export const metadata: Metadata = { title: "音乐小角落", description: "学习、阅读、编程时的背景音乐播放器" };
@@ -27,26 +28,7 @@ export default async function MusicPage({
         <p className="muted">为学习、阅读和编程留一段不喧闹的背景声。点击播放按钮后才会开始播放。</p>
       </div>
 
-      <form className="filter-panel mt-7 grid gap-3 p-4 md:grid-cols-[1fr_220px_auto] md:p-5">
-        <label className="flex h-[42px] min-w-0 items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 transition focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[color-mix(in_srgb,var(--primary)_16%,transparent)]">
-          <Search className="pointer-events-none size-4 shrink-0 text-[var(--muted)]" aria-hidden="true" />
-          <input
-            className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted)]"
-            name="q"
-            defaultValue={sp.q}
-            placeholder="搜索歌曲名、作者或专辑"
-          />
-        </label>
-        <select className="input" name="category" defaultValue={sp.category || ""}>
-          <option value="">全部分类</option>
-          {data.categories.map((category) => (
-            <option key={category} value={category || ""}>
-              {category}
-            </option>
-          ))}
-        </select>
-        <button className="btn btn-primary"><SlidersHorizontal className="size-4" />筛选</button>
-      </form>
+      <MusicFilterForm categories={data.categories} initialCategory={sp.category} initialQuery={sp.q} />
 
       <div className="mt-7 flex items-center gap-2 text-sm muted"><Headphones className="size-4 text-[var(--primary)]" />共找到 {data.total} 首音乐</div>
 

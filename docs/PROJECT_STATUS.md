@@ -53,6 +53,7 @@
   - 按标签生成文章草稿：新增 `scripts/generate-tag-article-drafts.ts` 和 `npm run generate:tag-articles:dry` / `npm run generate:tag-articles`。该脚本保留为小批量人工审核前的辅助工具；首阶段已生成的 94 篇草稿因可读性不足被人工清空，不得在未重新设计专题内容和审核流程前重新执行。
   - 全站底部 MiniPlayer 已移除挂载：页面不再显示固定底部播放条或收起后的音乐浮动按钮；导航栏音乐按钮、其面板与 `/music` 页面继续复用 `MusicPlayerProvider` 和现有播放逻辑。
   - 跨页搜索播放保持：`MusicPlayerProvider` 已是全局隐藏音频核心，内部持有唯一的 `HTMLAudioElement` 且位于根布局 `Providers` 中。Header 搜索从原生表单提交改为 App Router `router.push`，避免整页导航卸载音频实例；搜索和其他客户端路由切换不再中断音乐。
+  - `/music` 筛选播放保持：筛选表单已拆分为客户端 `MusicFilterForm`，通过 `router.push(..., { scroll: false })` 更新 `q` 和 `category` 查询参数，不再执行原生 GET 表单整页导航。筛选只刷新列表，不会暂停或清空当前歌曲、队列和根级音频实例；用户点击筛选结果中的其他歌曲时，才沿用 `playTrack(track, filteredTracks)` 切换队列。
 
 ## 部分完成
 
